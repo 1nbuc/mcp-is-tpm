@@ -5,3 +5,7 @@
 build
 
 .idea
+
+bin
+
+app/src/main/resources/.env
