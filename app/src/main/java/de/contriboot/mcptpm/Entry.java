@@ -1,25 +1,51 @@
 package de.contriboot.mcptpm;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.figaf.integration.tpm.client.agreement.AgreementClient;
-import io.modelcontextprotocol.server.McpServer;
-import io.modelcontextprotocol.server.McpSyncServer;
-import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
-import io.modelcontextprotocol.spec.McpSchema;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.figaf.integration.common.entity.RequestContext;
+import de.contriboot.mcptpm.handlers.*;
+import de.contriboot.mcptpm.utils.Config;
+import org.springframework.ai.support.ToolCallbacks;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.method.MethodToolCallback;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+@SpringBootApplication
 public class Entry {
+
     public static void main(String[] args) {
-        StdioServerTransportProvider transportProvider = new StdioServerTransportProvider(new ObjectMapper());
-        McpSyncServer syncServer = McpServer.sync(transportProvider)
-                .serverInfo("TPM-integration-suite", "1.0.0")
-                .capabilities(
-                        McpSchema.ServerCapabilities.builder()
-                                .tools(true)
-                                .build())
-                .build();
+        SpringApplication.run(Entry.class, args);
     }
 
-    public void registerAllTools(McpSyncServer server) {
+    @Bean
+    public List<ToolCallback> getTools(
+            PartnerTools partnerTools,
+            AgreementTools agreementTools,
+            BusinessDocumentTools busDocTools,
+            CompanyProfileTools companyProfileTools,
+            AgreementTemplateTools agreementTemplateTools,
+            MessageImplementationGuidelinesTools mesImplGuidelinesTools
+    ) throws JsonProcessingException {
+        return List.of(ToolCallbacks.from(
+                partnerTools,
+                agreementTools,
+                busDocTools,
+                companyProfileTools,
+                agreementTemplateTools,
+                mesImplGuidelinesTools
 
+        ));
     }
+
+    @Bean
+    public MethodToolCallback getCustomTools() throws JsonMappingException {
+        return AgreementTools.getUpdateB2BScenarioTool();
+    }
+
 }
