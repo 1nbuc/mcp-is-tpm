@@ -1,22 +1,16 @@
 package de.contriboot.mcptpm.handlers;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import com.figaf.integration.tpm.client.agreement.AgreementClient;
-import com.figaf.integration.tpm.client.b2bscenario.B2BScenarioClient;
-import com.figaf.integration.tpm.entity.B2BScenarioMetadata;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
 import de.contriboot.mcptpm.api.B2BScenarioClientExtended;
 import de.contriboot.mcptpm.api.entities.B2BScenarioEntity;
 import de.contriboot.mcptpm.utils.Config;
 import de.contriboot.mcptpm.utils.ToolUtils;
-import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.method.MethodToolCallback;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
@@ -51,21 +45,20 @@ public class AgreementTools {
 
 
     public String updateB2BScenario(B2BScenarioEntity b2bScenarioEntity) {
+
         clientb2b.updateB2BScenario(Config.getRequestContextFromEnv(), b2bScenarioEntity);
         return "success";
     }
 
     public static MethodToolCallback getUpdateB2BScenarioTool() throws JsonMappingException {
+        // Find the method that now accepts a String argument
         Method method = ReflectionUtils.findMethod(AgreementTools.class, "updateB2BScenario", B2BScenarioEntity.class);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonSchemaGenerator generator = new JsonSchemaGenerator(objectMapper);
 
         return MethodToolCallback.builder()
                 .toolDefinition(ToolDefinition.builder()
                         .name("update-b2b-scenario")
                         .description("Update Agreements B2B Scenario")
-                        .inputSchema(ToolUtils.getJsonSchema(B2BScenarioEntity.class))
+                        .inputSchema(ToolUtils.getJsonSchema(B2BScenarioEntity.class, "b2bScenarioEntity"))
                         .build())
                 .toolMethod(method)
                 .toolObject(new AgreementTools())

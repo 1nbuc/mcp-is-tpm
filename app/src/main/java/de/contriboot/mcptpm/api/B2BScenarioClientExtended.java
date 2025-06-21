@@ -54,6 +54,6 @@ public class B2BScenarioClientExtended extends B2BScenarioClient {
     }
 
     public String triggerB2BScenarioUpdate() {
-
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

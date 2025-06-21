@@ -15,11 +15,6 @@ import java.util.Map;
 @ToString
 public class B2BScenarioEntity {
 
-    // somehow lombok is not working for the parentId when trying to get within the client
-    public String getParentId() {
-        return parentId;
-    }
-
     @JsonProperty("IsVanScenario")
     private boolean isVanScenario;
 
