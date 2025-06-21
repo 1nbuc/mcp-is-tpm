@@ -4,19 +4,12 @@ import com.figaf.integration.common.entity.RequestContext;
 import com.figaf.integration.common.exception.ClientIntegrationException;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import com.figaf.integration.tpm.client.b2bscenario.B2BScenarioClient;
-import com.figaf.integration.tpm.entity.B2BScenarioMetadata;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
-import com.figaf.integration.tpm.entity.trading.CreateTradingPartnerRequest;
-import com.figaf.integration.tpm.parser.B2BScenarioResponseParser;
-import com.figaf.integration.tpm.parser.TradingPartnerVerboseParser;
 import de.contriboot.mcptpm.api.entities.B2BScenarioEntity;
-import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.method.MethodToolCallback;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
-
-import java.util.List;
 
 import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
 import static java.lang.String.format;
@@ -58,5 +51,9 @@ public class B2BScenarioClientExtended extends B2BScenarioClient {
                 });
 
         return MethodToolCallback.builder().toolDefinition(ToolDefinition.builder().name("update-b2b-scenario").build()).build();
+    }
+
+    public String triggerB2BScenarioUpdate() {
+
     }
 }

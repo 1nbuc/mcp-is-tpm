@@ -9,3 +9,5 @@ build
 bin
 
 app/src/main/resources/.env
+
+ignore
