@@ -11,3 +11,13 @@ bin
 app/src/main/resources/.env
 
 ignore
+
+.gitignore
+.env
+
+app.log
+
+app/out
+
+.vscode
+

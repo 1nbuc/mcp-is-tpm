@@ -20,4 +20,6 @@ public class AdministrativeData {
 
     @JsonProperty("modifiedBy")
     private String modifiedBy;
+
+
 }

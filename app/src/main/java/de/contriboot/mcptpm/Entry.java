@@ -30,7 +30,8 @@ public class Entry {
             BusinessDocumentTools busDocTools,
             CompanyProfileTools companyProfileTools,
             AgreementTemplateTools agreementTemplateTools,
-            MessageImplementationGuidelinesTools mesImplGuidelinesTools
+            MessageImplementationGuidelinesTools mesImplGuidelinesTools,
+            TypeSystemTools typeSystemTools
     ) throws JsonProcessingException {
         return List.of(ToolCallbacks.from(
                 partnerTools,
@@ -38,7 +39,8 @@ public class Entry {
                 busDocTools,
                 companyProfileTools,
                 agreementTemplateTools,
-                mesImplGuidelinesTools
+                mesImplGuidelinesTools,
+                typeSystemTools
 
         ));
     }

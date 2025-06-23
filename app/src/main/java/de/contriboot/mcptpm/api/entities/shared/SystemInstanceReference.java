@@ -10,5 +10,5 @@ import lombok.ToString;
 @ToString
 public class SystemInstanceReference {
     @JsonProperty("Properties")
-    private SystemInstanceReferenceProperties properties = new SystemInstanceReferenceProperties();
+    private IdProperties properties = new IdProperties();
 }

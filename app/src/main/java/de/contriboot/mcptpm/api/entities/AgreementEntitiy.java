@@ -57,4 +57,7 @@ public class AgreementEntitiy {
     @JsonProperty("CommunicationPartnerData")
     private CommunicationPartnerData communicationPartnerData = new CommunicationPartnerData();
 
+    @JsonProperty("TransactionsNumber")
+    private int transactionsNumber;
+
 }

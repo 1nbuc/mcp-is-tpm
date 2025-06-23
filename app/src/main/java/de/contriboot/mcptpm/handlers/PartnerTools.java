@@ -8,6 +8,8 @@ import com.figaf.integration.tpm.entity.trading.System;
 import com.figaf.integration.tpm.entity.trading.verbose.TradingPartnerVerboseDto;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
 import com.figaf.integration.tpm.entity.trading.*;
+import de.contriboot.mcptpm.api.clients.TradingPartnerClientExtended;
+import de.contriboot.mcptpm.api.entities.PartnerSystemEntity;
 import de.contriboot.mcptpm.utils.Config;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -22,11 +24,11 @@ import java.util.Map;
 @Service
 public class PartnerTools  {
 
-    private TradingPartnerClient client;
+    private TradingPartnerClientExtended client;
     private ObjectMapper objectMapper = new ObjectMapper(); // For JSON deserialization
 
     public PartnerTools() {
-        this.client = new TradingPartnerClient(new HttpClientsFactory());
+        this.client = new TradingPartnerClientExtended(new HttpClientsFactory());
         // this.schemaGenerator = new JsonSchemaGenerator(new ObjectMapper()); // Not directly used for this refactoring
     }
 
@@ -55,10 +57,6 @@ public class PartnerTools  {
         return client.getRawById(partnerId, Config.getRequestContextFromEnv());
     }
 
-    @Tool(name = "get-type-systems", description = "Get available type systems")
-    public List<TypeSystem> getAllTypeSystems() {
-        return client.getAllTypeSystems(Config.getRequestContextFromEnv());
-    }
 
     @Tool(name = "get-system-types", description = "Get available system types")
     public List<SystemType> getAllSystemTypes() { // Corrected client call
@@ -73,7 +71,7 @@ public class PartnerTools  {
             @ToolParam(description = "Alias for the system", required = false) String alias,
             @ToolParam(description = "Description for the system", required = false) String description,
             @ToolParam(description = "System type", required = false) String systemType,
-            @ToolParam(description = "Purpose of the system", required = false) String purpose,
+            @ToolParam(description = "Purpose of the system. Can be Dev, Test, Prod", required = true) String purpose,
             @ToolParam(description = "Link associated with the system", required = false) String link,
             @ToolParam(description = "JSON list of type systems. Each element is a JSON string representing a TypeSystem object (e.g., {\"Id\":\"sysId\", \"Name\":\"sysName\", \"Versions\":[{\"Id\":\"vId\", \"Name\":\"vName\"}]})", required = false) List<String> typeSystemsJsonList,
             @ToolParam(description = "List of communication channel template IDs", required = false) List<String> communicationChannelTemplates) {
@@ -230,6 +228,11 @@ public class PartnerTools  {
         }
 
         return client.createTradingPartner(request, Config.getRequestContextFromEnv());
+    }
+
+    @Tool(name = "get-systems-of-partner", description = "Returns all systems of a trading partner by its ID")
+    public List<PartnerSystemEntity> getTradingPartnerSystem(String partnerId) {
+        return client.getSystemsOfPartner(Config.getRequestContextFromEnv(), partnerId);
     }
 
 }

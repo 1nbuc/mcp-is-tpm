@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import com.figaf.integration.tpm.client.agreement.AgreementClient;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
-import de.contriboot.mcptpm.api.B2BScenarioClientExtended;
+import de.contriboot.mcptpm.api.clients.AgreementClientExtended;
+import de.contriboot.mcptpm.api.clients.B2BScenarioClientExtended;
+import de.contriboot.mcptpm.api.entities.AgreementEntitiy;
 import de.contriboot.mcptpm.api.entities.B2BScenarioEntity;
+import de.contriboot.mcptpm.api.entities.deploy.GetDeployStatusEntity;
 import de.contriboot.mcptpm.utils.Config;
 import de.contriboot.mcptpm.utils.ToolUtils;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.method.MethodToolCallback;
 import org.springframework.stereotype.Service;
@@ -20,11 +24,11 @@ import java.util.List;
 @Service
 public class AgreementTools {
 
-    private AgreementClient client;
+    private AgreementClientExtended client;
     private B2BScenarioClientExtended clientb2b;
 
     public AgreementTools() {
-        this.client = new AgreementClient(new HttpClientsFactory());
+        this.client = new AgreementClientExtended(new HttpClientsFactory());
         this.clientb2b = new B2BScenarioClientExtended(new HttpClientsFactory());
     }
 
@@ -37,8 +41,8 @@ public class AgreementTools {
     public String getB2BScenario(String agreementId) {
         List<TpmObjectMetadata> agreementList = client.getAllMetadata(Config.getRequestContextFromEnv());
         TpmObjectMetadata selectedAgreement = agreementList.stream()
-                        .filter(agreement -> agreement.getObjectId().equals(agreementId))
-                                .findFirst().orElseThrow();
+                .filter(agreement -> agreement.getObjectId().equals(agreementId))
+                .findFirst().orElseThrow();
 
         return clientb2b.getB2BScenariosForAgreementRaw(Config.getRequestContextFromEnv(), selectedAgreement);
     }
@@ -65,4 +69,21 @@ public class AgreementTools {
                 .build();
     }
 
+    @Tool(name = "create-agreement-with-bound-template", description = "Create a new b2b agreement which is bound to a template. Recommended over copy-template")
+    public AgreementEntitiy createAgreement(
+            String agreementName,
+            String description,
+            String agreementTemplateId, // cd58f1a766d549018a48d71a2be604dc
+            List<String> transactionIds, //4df9c28c265b4310baeaf060701e95f0
+            String partnerId) { // 994a90074f22451bb539acfd02d669b1
+        AgreementEntitiy agreementEntity = client.buildNewAgreementEntityByBoundTemplate(agreementName, description, agreementTemplateId, transactionIds, partnerId);
+        return client.createAgreement(Config.getRequestContextFromEnv(), agreementEntity);
+    }
+
+    @Tool(name = "trigger-agreement-activate-or-update-deployment")
+    public GetDeployStatusEntity updateOrDeployAgreement(
+            String agreementId, List<String> transactionIds,
+            @ToolParam(description = "false if is draft activation, true for updating existing active resource") boolean isUpdate) {
+        return client.deployArtifactAndWait(Config.getRequestContextFromEnv(), agreementId, transactionIds, isUpdate);
+    }
 }

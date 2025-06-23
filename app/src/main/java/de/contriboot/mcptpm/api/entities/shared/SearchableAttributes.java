@@ -17,4 +17,13 @@ public class SearchableAttributes {
 
     @JsonProperty("TENANT")
     private List<String> tenant = new ArrayList<>();
+
+    @JsonProperty("ModelVersion")
+    private List<String> modelVersion = new ArrayList<>();
+
+    @JsonProperty("Alias")
+    private List<String> alias = new ArrayList<>();
+
+    @JsonProperty("SystemType")
+    private List<String> systemType = new ArrayList<>();
 }

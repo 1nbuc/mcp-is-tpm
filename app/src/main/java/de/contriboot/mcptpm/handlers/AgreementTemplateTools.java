@@ -1,9 +1,8 @@
 package de.contriboot.mcptpm.handlers;
 
 import com.figaf.integration.common.factory.HttpClientsFactory;
-import com.figaf.integration.tpm.client.agreement.AgreementTemplateClient;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
-import de.contriboot.mcptpm.api.AgreementTemplateClientExtended;
+import de.contriboot.mcptpm.api.clients.AgreementTemplateClientExtended;
 import de.contriboot.mcptpm.api.entities.AgreementTemplateEntity;
 import de.contriboot.mcptpm.utils.Config;
 import org.springframework.ai.tool.annotation.Tool;

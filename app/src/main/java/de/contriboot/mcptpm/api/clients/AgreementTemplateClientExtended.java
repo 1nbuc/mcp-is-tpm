@@ -1,4 +1,4 @@
-package de.contriboot.mcptpm.api;
+package de.contriboot.mcptpm.api.clients;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.figaf.integration.common.entity.RequestContext;

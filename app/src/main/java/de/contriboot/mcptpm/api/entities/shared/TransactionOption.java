@@ -12,6 +12,7 @@ import java.util.List;
 @Setter
 @ToString
 public class TransactionOption {
+    // Either Bind or Reference
     @JsonProperty("Option")
     private String option;
 
