@@ -1,344 +1,350 @@
 package de.contriboot.mcptpm.api.entities.mag;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.figaf.integration.common.factory.HttpClientsFactory;
+import de.contriboot.mcptpm.api.clients.TypeSystemClient;
+import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
-public class MAGResponse {
+@Getter
+@Setter
+public class MAGEntity {
     @JsonProperty("ArtifactMetadata")
-    public ArtifactMetadata artifactMetadata;
+    private ArtifactMetadata artifactMetadata;
     @JsonProperty("Identification")
-    public Identification identification;
+    private Identification identification;
     @JsonProperty("SourceBusinessContext")
-    public ArrayList<SourceBusinessContext> sourceBusinessContext;
+    private ArrayList<SourceBusinessContext> sourceBusinessContext;
     @JsonProperty("TargetBusinessContext")
-    public ArrayList<TargetBusinessContext> targetBusinessContext;
+    private ArrayList<TargetBusinessContext> targetBusinessContext;
     @JsonProperty("Status")
-    public String status;
+    private String status;
     @JsonProperty("SourceMig")
-    public SourceMig sourceMig;
+    private SourceMig sourceMig;
     @JsonProperty("TargetMig")
-    public TargetMig targetMig;
+    private TargetMig targetMig;
     @JsonProperty("DomainMappingElementsWithTransformation")
-    public ArrayList<DomainMappingElementsWithTransformation> domainMappingElementsWithTransformation;
+    private ArrayList<DomainMappingElementsWithTransformation> domainMappingElementsWithTransformation;
     @JsonProperty("AdministrativeData")
-    public AdministrativeData administrativeData;
+    private AdministrativeData administrativeData;
     @JsonProperty("Documentation")
-    public Documentation documentation;
+    private Documentation documentation;
     @JsonProperty("DocumentationArtifacts")
-    public DocumentationArtifacts documentationArtifacts;
+    private Map<String, String> documentationArtifacts;
     @JsonProperty("TargetNodeStatus")
-    public TargetNodeStatus targetNodeStatus;
+    private TargetNodeStatus targetNodeStatus;
     @JsonProperty("SharedFunctions")
-    public ArrayList<SharedFunction> sharedFunctions;
+    private ArrayList<SharedFunction> sharedFunctions;
     @JsonProperty("SharedVariables")
-    public ArrayList<SharedVariable> sharedVariables;
+    private ArrayList<SharedVariable> sharedVariables;
+    @JsonProperty("TargetNodeDuplicationRules")
+    private ArrayList<Object> targetNodeDuplicationRules;
 
+    @Getter
+    @Setter
     public static class SharedVariable{
         @JsonProperty("VariableGuid")
-        public String variableGuid;
+        private String variableGuid;
         @JsonProperty("Name")
-        public String name;
+        private String name;
         @JsonProperty("Summary")
-        public String summary;
+        private String summary;
         @JsonProperty("Default")
-        public String defaultAttr;
+        private String defaultAttr;
         @JsonProperty("CreatedBy")
-        public String createdBy;
+        private String createdBy;
         @JsonProperty("CreatedOn")
-        public Date createdOn;
+        private Date createdOn;
         @JsonProperty("ModifiedBy")
-        public String modifiedBy;
+        private String modifiedBy;
         @JsonProperty("ModifiedOn")
-        public Date modifiedOn;
+        private Date modifiedOn;
     }
 
     @Getter
     @Setter
     public class SharedFunction{
         @JsonProperty("Name")
-        public String name;
+        private String name;
         @JsonProperty("DocumentationHtmlMode")
-        public boolean documentationHtmlMode;
+        private boolean documentationHtmlMode;
         @JsonProperty("Confidential")
-        public boolean confidential;
+        private boolean confidential;
         @JsonProperty("Origin")
-        public String origin;
+        private String origin;
         @JsonProperty("CreatedBy")
-        public String createdBy;
+        private String createdBy;
         @JsonProperty("CreatedOn")
-        public Date createdOn;
+        private Date createdOn;
         @JsonProperty("ModifiedBy")
-        public String modifiedBy;
+        private String modifiedBy;
         @JsonProperty("ModifiedOn")
-        public Date modifiedOn;
+        private Date modifiedOn;
         @JsonProperty("IsCondition")
-        public boolean isCondition;
+        private boolean isCondition;
         @JsonProperty("FunctionGuid")
-        public String functionGuid;
+        private String functionGuid;
         @JsonProperty("FunctionImplementations")
-        public ArrayList<FunctionImplementation> functionImplementations;
-        public boolean isReference;
+        private ArrayList<FunctionImplementation> functionImplementations;
+        private boolean isReference;
     }
 
     @Setter
     @Getter
     public static class AdministrativeData {
         @JsonProperty("CreatedBy")
-        public String createdBy;
+        private String createdBy;
         @JsonProperty("CreatedOn")
-        public long createdOn;
+        private long createdOn;
         @JsonProperty("ModifiedBy")
-        public String modifiedBy;
+        private String modifiedBy;
         @JsonProperty("ModifiedOn")
-        public long modifiedOn;
+        private long modifiedOn;
+        @JsonProperty("CreatedFrom")
+        private String createdFrom;
     }
 
     @Setter
     @Getter
     public static class ArtifactMetadata {
         @JsonProperty("SchemaVersion")
-        public String schemaVersion;
+        private String schemaVersion;
         @JsonProperty("ArtifactType")
-        public String artifactType;
+        private String artifactType;
     }
 
     @Setter
     @Getter
     public static class ArtifactValue {
         @JsonProperty("Id")
-        public String id;
-        public String action;
+        private String id;
+        private String action;
     }
 
     @Setter
     @Getter
     public static class ContextValue {
-        public String key;
-        public String name;
+        private String key;
+        private String name;
     }
 
     @Setter
     @Getter
     public static class Definition {
         @JsonProperty("ArtifactValue")
-        public ArtifactValue artifactValue;
+        private ArtifactValue artifactValue;
     }
 
     @Setter
     @Getter
     public static class Documentation {
         @JsonProperty("Notes")
-        public ArrayList<Note> notes;
+        private ArrayList<Note> notes;
         @JsonProperty("NumberOfNotes")
-        public int numberOfNotes;
+        private int numberOfNotes;
         @JsonProperty("Name")
-        public Name name;
+        private Name name;
         @JsonProperty("Definition")
-        public Definition definition;
+        private Definition definition;
         @JsonProperty("Summary")
-        public Summary summary;
+        private Summary summary;
     }
 
     @Getter
     @Setter
     public static class Note{
         @JsonProperty("ArtifactValue")
-        public ArtifactValue artifactValue;
+        private ArtifactValue artifactValue;
         @JsonProperty("Properties")
-        public Properties properties;
+        private Properties properties;
     }
 
     @Getter
     @Setter
     public static class Category{
         @JsonProperty("ArtifactValue")
-        public ArtifactValue artifactValue;
+        private ArtifactValue artifactValue;
         @JsonProperty("PropertyName")
-        public String propertyName;
+        private String propertyName;
     }
 
     @Getter
     @Setter
     public static class Properties{
         @JsonProperty("Category")
-        public Category category;
+        private Category category;
         @JsonProperty("Number")
-        public Number number;
+        private Number number;
     }
 
-    @Setter
-    @Getter
-    public static class DocumentationArtifacts {
-        @JsonProperty("84ef6e094a69391589ec6bdbba8dec9f")
-        public String _84ef6e094a69391589ec6bdbba8dec9f;
-        @JsonProperty("6666cd76f96936469e7be39d750cc7d9")
-        public String _6666cd76f96936469e7be39d750cc7d9;
-    }
 
     @Setter
     @Getter
     public static class DomainMappingElement {
         @JsonProperty("SourceDomainSet")
-        public ArrayList<SourceDomainSet> sourceDomainSet;
+        private ArrayList<SourceDomainSet> sourceDomainSet;
         @JsonProperty("TargetDomainSet")
-        public ArrayList<TargetDomainSet> targetDomainSet;
+        private ArrayList<TargetDomainSet> targetDomainSet;
         @JsonProperty("Documentation")
-        public Documentation documentation;
+        private Documentation documentation;
     }
 
     @Setter
     @Getter
     public static class DomainMappingElementsWithTransformation {
         @JsonProperty("DomainMappingElement")
-        public DomainMappingElement domainMappingElement;
+        private DomainMappingElement domainMappingElement;
         @JsonProperty("Transformation")
-        public Transformation transformation;
+        private Transformation transformation;
         @JsonProperty("Confidence")
-        public double confidence;
+        private double confidence;
         @JsonProperty("Confidential")
-        public boolean confidential;
+        private boolean confidential;
     }
 
     @Setter
     @Getter
     public static class Function {
         @JsonProperty("FunctionGuid")
-        public String functionGuid;
-        public boolean isReference;
+        private String functionGuid;
+        @JsonProperty("isReference")
+        private boolean isReference;
         @JsonProperty("FunctionParameters")
-        public ArrayList<FunctionParameter> functionParameters;
+        private ArrayList<FunctionParameter> functionParameters;
         @JsonProperty("FunctionImplementations")
-        public ArrayList<FunctionImplementation> functionImplementations;
+        private ArrayList<FunctionImplementation> functionImplementations;
     }
 
     @Setter
     @Getter
     public static class FunctionImplementation {
         @JsonProperty("SourceCode")
-        public String sourceCode;
+        private String sourceCode;
         @JsonProperty("FunctionImplementationLanguage")
-        public FunctionImplementationLanguage functionImplementationLanguage;
+        private FunctionImplementationLanguage functionImplementationLanguage;
     }
 
     @Setter
     @Getter
     public static class FunctionImplementationLanguage {
         @JsonProperty("Name")
-        public String name;
+        private String name;
         @JsonProperty("Version")
-        public String version;
+        private String version;
     }
 
     @Setter
     @Getter
     public static class FunctionParameter {
         @JsonProperty("PositionInParameterList")
-        public int positionInParameterList;
+        private int positionInParameterList;
         @JsonProperty("Direction")
-        public String direction;
+        private String direction;
         @JsonProperty("Type")
-        public String type;
+        private String type;
         @JsonProperty("Name")
-        public String name;
+        private String name;
     }
 
     @Setter
     @Getter
     public static class Identification {
         @JsonProperty("ObjectGuid")
-        public String objectGuid;
+        private String objectGuid;
         @JsonProperty("MAGGUID")
-        public String mAGGUID;
+        private String mAGGUID;
         @JsonProperty("ImportCorrelationGroupId")
-        public String importCorrelationGroupId;
+        private String importCorrelationGroupId;
         @JsonProperty("ImportCorrelationObjectId")
-        public String importCorrelationObjectId;
+        private String importCorrelationObjectId;
         @JsonProperty("MAGVersion")
-        public String mAGVersion;
+        private String mAGVersion;
         @JsonProperty("Customer")
-        public String customer;
+        private String customer;
     }
 
     @Setter
     @Getter
     public static class Name {
         @JsonProperty("ArtifactValue")
-        public ArtifactValue artifactValue;
+        private ArtifactValue artifactValue;
     }
 
     @Setter
     @Getter
     public static class ParameterAssignment {
         @JsonProperty("PositionInParameterList")
-        public int positionInParameterList;
+        private int positionInParameterList;
         @JsonProperty("PositionInParameter")
-        public int positionInParameter;
+        private int positionInParameter;
         @JsonProperty("PositionInDomainSet")
-        public int positionInDomainSet;
+        private int positionInDomainSet;
     }
 
 
     @Setter
     @Getter
     public static class SourceBusinessContext {
-        public String contextType;
-        public String codeListId;
-        public ArrayList<ContextValue> contextValues;
+        private String contextType;
+        private String codeListId;
+        private ArrayList<ContextValue> contextValues;
     }
 
     @Setter
     @Getter
     public static class SourceDomainSet {
         @JsonProperty("DomainGuid")
-        public String domainGuid;
+        private String domainGuid;
         @JsonProperty("Position")
-        public int position;
+        private int position;
     }
 
     @Setter
     @Getter
     public static class SourceMig {
         @JsonProperty("ObjectGUID")
-        public String objectGUID;
+        private String objectGUID;
         @JsonProperty("TypeSystemId")
-        public String typeSystemId;
+        private String typeSystemId;
     }
 
     @Setter
     @Getter
     public static class Summary {
         @JsonProperty("ArtifactValue")
-        public ArtifactValue artifactValue;
+        private ArtifactValue artifactValue;
     }
 
     @Setter
     @Getter
     public static class TargetBusinessContext {
-        public String contextType;
-        public String codeListId;
-        public ArrayList<ContextValue> contextValues;
+        private String contextType;
+        private String codeListId;
+        private ArrayList<ContextValue> contextValues;
     }
 
     @Setter
     @Getter
     public static class TargetDomainSet {
         @JsonProperty("DomainGuid")
-        public String domainGuid;
+        private String domainGuid;
         @JsonProperty("Position")
-        public int position;
+        private int position;
     }
 
     @Setter
     @Getter
     public static class TargetMig {
         @JsonProperty("ObjectGUID")
-        public String objectGUID;
+        private String objectGUID;
         @JsonProperty("TypeSystemId")
-        public String typeSystemId;
+        private String typeSystemId;
     }
 
     @Setter
@@ -350,9 +356,54 @@ public class MAGResponse {
     @Getter
     public static class Transformation {
         @JsonProperty("Function")
-        public Function function;
+        private Function function;
         @JsonProperty("ParameterAssignments")
-        public ArrayList<ParameterAssignment> parameterAssignments;
+        private ArrayList<ParameterAssignment> parameterAssignments;
     }
+
+    public MAGProposalRequest getMAGProposalRequest(
+            MIGEntity targetMigEntity,
+            MIGEntity sourceMigEntity,
+            List<MAGProposalRequest.DomainGuid> targetDomainGuids,
+            List<MAGProposalRequest.DomainGuid> sourceDomainGuids
+    ) {
+        MAGProposalRequest request = new MAGProposalRequest();
+        MAGProposalRequest.Identification identification = new MAGProposalRequest.Identification();
+        identification.setMAGGUID(getIdentification().getMAGGUID());
+        identification.setCustomer(getIdentification().getCustomer());
+        identification.setMAGVersion(getIdentification().getMAGVersion());
+        identification.setMagProposalRequestId(System.currentTimeMillis());
+        identification.setImportCorrelationObjectId(getIdentification().getImportCorrelationObjectId());
+        identification.setImportCorrelationGroupId(getIdentification().getImportCorrelationGroupId());
+        identification.setObjectGuid(getIdentification().getObjectGuid());
+        request.setIdentification(identification);
+
+        request.setMagProposalRequestSchemaVersion("1.0");
+
+        // Get domain GUIDs
+        // Get codelist
+        // Get codelist selection
+        // get codelist selection vertex GUIDs
+        // add domainGuids for every selectin vertex GUID + one without CodeValueGuid
+
+        request.setSourceBusinessContext(getSourceBusinessContext());
+        request.setTargetBusinessContext(getTargetBusinessContext());
+
+        request.setTargetDomainGuids(targetDomainGuids);
+        request.setSourceDomainGuids(sourceDomainGuids);
+
+        request.setSourceMig(getSourceMig());
+        request.setTargetMig(getTargetMig());
+
+        request.setSourceMessageTemplate(sourceMigEntity.getMessageTemplate());
+        request.setTargetMessageTemplate(targetMigEntity.getMessageTemplate());
+
+        MAGProposalRequest.MagValidationRelevantInformation magValidationRelevantInformation = new MAGProposalRequest.MagValidationRelevantInformation();
+        magValidationRelevantInformation.setSharedVariables(new ArrayList<>());
+        request.setMagValidationRelevantInformation(magValidationRelevantInformation);
+
+        return request;
+    }
+
 
 }

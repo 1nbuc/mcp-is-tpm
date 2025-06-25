@@ -2,8 +2,13 @@ package de.contriboot.mcptpm.api.clients;
 
 import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
 import static java.lang.String.format;
+
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.figaf.integration.common.entity.RequestContext;
 import com.figaf.integration.common.exception.ClientIntegrationException;
 import com.figaf.integration.common.factory.HttpClientsFactory;
@@ -12,7 +17,9 @@ import com.figaf.integration.tpm.client.TpmBaseClient;
 import de.contriboot.mcptpm.api.entities.deploy.CreateDeployRequest;
 import de.contriboot.mcptpm.api.entities.mapper.TypeSystemsMapper;
 import de.contriboot.mcptpm.api.entities.typeSystem.AllTypeSystemsResponse;
+import de.contriboot.mcptpm.utils.ToolUtils;
 import org.springframework.http.*;
+import org.springframework.web.client.HttpServerErrorException;
 
 public class TypeSystemClient extends TpmBaseClient {
     public static final String TYPE_MESSAGE_VERSIONS_FORMAT = "/api/1.0/typesystems/%s?artifacttype=Message&filter=messagesOnly";
@@ -22,6 +29,7 @@ public class TypeSystemClient extends TpmBaseClient {
     public static final String PRODUCT_CLASSIFICATION_RESOURCE = "/api/1.0/contextdimensions/ProductClassification";
     public static final String GEOPOLITICAL_RESOURCE = "/api/1.0/contextdimensions/Geopolitical";
     public static final String BUSINESS_PROCESS_ROLE_RESOURCE = "/api/1.0/contextdimensions/BusinessProcessRole";
+    public static final String CODE_VALUE_FORMAT = "/api/1.0/typesystems/%s/versions/%s/codelists/%s";
 
     public TypeSystemClient(HttpClientsFactory httpClientsFactory) {
         super(httpClientsFactory);
@@ -72,5 +80,42 @@ public class TypeSystemClient extends TpmBaseClient {
 
     public String getAllBusinessProcessRoles(RequestContext requestContext) {
         return executeGet(requestContext, BUSINESS_PROCESS_ROLE_RESOURCE, (response) -> response );
+    }
+
+    public List<String> getCodeValueVertexIds(
+            RequestContext requestContext,
+            String typeSystem,
+            String version,
+            String codeListId,
+            List<String> selectedCodes,
+            boolean allCodesSelected
+    ) {
+        String uri = format(CODE_VALUE_FORMAT, typeSystem, version, codeListId).replace(" ", "%20");
+        ArrayNode allCodes;
+        try {
+            allCodes = (ArrayNode) executeGet(
+                    requestContext,
+                    uri.toString(),
+                    (response) -> ToolUtils.parseJson(response).get("Codes")
+            );
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
+
+
+         List<String> resultGuids = new ArrayList<>();
+
+         for (JsonNode code : allCodes) {
+             if (allCodesSelected) {
+                 resultGuids.add(code.get("VertexGUID").asText());
+                 continue;
+             }
+
+            if (selectedCodes.contains(code.get("Id").asText())) {
+                resultGuids.add(code.get("VertexGUID").asText());
+            }
+         }
+
+         return resultGuids;
     }
 }

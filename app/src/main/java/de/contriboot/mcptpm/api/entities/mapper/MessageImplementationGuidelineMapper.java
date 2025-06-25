@@ -1,23 +1,27 @@
 package de.contriboot.mcptpm.api.entities.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.contriboot.mcptpm.api.clients.MigClientExtended;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
-import de.contriboot.mcptpm.api.entities.mig.MigEntityUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 public class MessageImplementationGuidelineMapper {
 
 
 
     public static MIGEntity fromJsonString(String jsonString) {
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
         try {
             return objectMapper.readValue(jsonString, MIGEntity.class);
         } catch (Exception e) {
+            log.error("Error mapping JSON string to MIGEntity", e);
             throw new RuntimeException("Error mapping JSON string to MIGEntity", e);
         }
     }
@@ -31,7 +35,7 @@ public class MessageImplementationGuidelineMapper {
         }
     }
 
-    public static String minimalNodeListToJSONString(List<MigEntityUtils.MinimalNode> entity) {
+    public static String minimalNodeListToJSONString(List<MIGEntity.MinimalNode> entity) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             return objectMapper.writeValueAsString(entity);

@@ -1,6 +1,7 @@
 package de.contriboot.mcptpm.api.entities.mag;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -34,10 +35,10 @@ public class MAGCreateEntity {
     private Map<String, String> documentationArtifacts;
 
     @JsonProperty("SourceBusinessContext")
-    private List<BusinessContext> sourceBusinessContext = new ArrayList<>();
+    private List<MIGEntity.BusinessContext> sourceBusinessContext = new ArrayList<>();
 
     @JsonProperty("TargetBusinessContext")
-    private List<BusinessContext> targetBusinessContext = new ArrayList<>();
+    private List<MIGEntity.BusinessContext> targetBusinessContext = new ArrayList<>();
 
     @JsonProperty("DomainMappingElementsWithTransformation")
     private List<Object> domainMappingElementsWithTransformation = new ArrayList<>(); // Assuming empty array of objects
@@ -122,22 +123,6 @@ public class MAGCreateEntity {
 
         @JsonProperty("TypeSystemId")
         private String typeSystemId;
-    }
-
-
-
-    @Getter
-    @Setter
-    @ToString
-    public static class BusinessContext {
-        @JsonProperty("contextType")
-        private String contextType;
-
-        @JsonProperty("codeListId")
-        private String codeListId;
-
-        @JsonProperty("contextValues")
-        private List<ContextValue> contextValues = new ArrayList<>();
     }
 
     @Getter

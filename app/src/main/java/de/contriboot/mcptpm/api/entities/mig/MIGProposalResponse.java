@@ -18,11 +18,15 @@ public class MIGProposalResponse {
     @JsonProperty("MigProposal")
     public ArrayList<MigProposal> migProposal;
 
+    @Getter
+    @Setter
     public static class AdditionalItems {
         @JsonProperty("PropertyName")
         public String propertyName;
         @JsonProperty("Id")
         public String id;
+        @JsonProperty("QualifierValues")
+        public ArrayList<QualifierValue> qualifierValues;
     }
 
     public static class ArtifactMetadata {
@@ -61,6 +65,25 @@ public class MIGProposalResponse {
         @JsonProperty("RequestTime")
         public long requestTime;
     }
+
+    @Getter
+    @Setter
+    public static class QualifierValue{
+        @JsonProperty("VertexGUID")
+        public String vertexGUID;
+        @JsonProperty("QualifierValue")
+        public String qualifierValue;
+        @JsonProperty("QualifierName")
+        public String qualifierName;
+        @JsonProperty("QualifierRelativeXPath")
+        public String qualifierRelativeXPath;
+        @JsonProperty("CodelistReferenceVertexGUID")
+        public String codelistReferenceVertexGUID;
+        @JsonProperty("CodelistID")
+        public String codelistID;
+    }
+
+
 
     @Getter
     @Setter

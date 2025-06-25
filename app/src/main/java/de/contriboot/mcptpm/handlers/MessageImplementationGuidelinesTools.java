@@ -6,11 +6,11 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import de.contriboot.mcptpm.api.clients.MigClientExtended;
-import de.contriboot.mcptpm.api.entities.mapper.MIGResponseMapper;
+import de.contriboot.mcptpm.api.entities.mapper.MIGProposalResponseMapper;
 import de.contriboot.mcptpm.api.entities.mig.MIGProposalResponse;
-import de.contriboot.mcptpm.api.entities.mig.MigEntityUtils;
 import de.contriboot.mcptpm.utils.JsonUtils;
 import de.contriboot.mcptpm.utils.ToolUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,7 @@ import de.contriboot.mcptpm.api.entities.mig.CreateMIGRequest;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import de.contriboot.mcptpm.utils.Config;
 
+@Slf4j
 @Service
 public class MessageImplementationGuidelinesTools {
 
@@ -99,24 +100,26 @@ public class MessageImplementationGuidelinesTools {
     }
 
     @Tool(name = "get-all-mig-fields", description = "Get a List of all fields of MIG")
-    public List<MigEntityUtils.MinimalNode> getAllMigFields(
+    public List<MIGEntity.MinimalNode> getAllMigFields(
             String migVersionId,
             @ToolParam(description = "If true, only selected fields will be returned", required = true) boolean onlySelectedFields) {
         MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migVersionId);
-        MigEntityUtils migUtils = new MigEntityUtils(entity);
-        return migUtils.getMinimalNodeList(onlySelectedFields);
+        return entity.getMinimalNodeList(onlySelectedFields);
     }
 
     @Tool(name = "create-mig", description = "Create Message implementation guideline based on a type. " +
-            "Check available type systems and type system messages first")
-    public String createMig(
-        String migVersion,
+            "Check available type systems and type system messages first. " +
+            "If souccessful it will return two IDs a migguid and a field called just id. You probably want to use the " +
+            "id field since it corresponds to the migguidversion which is used by most tools")
+    public JsonNode createMig(
         String name,
         String summary,
         String messageTemplateId,
         String messageTemplateTag,
         String typeSystemAcronym,
         String typeSystemId,
+        @ToolParam(description = "Message version ID. Please fetch from get-type-system-message-full for a list. " +
+                "If not further specified the user probably wants the latest version")
         String versionId,
         String messageTemplateName,
         @ToolParam(description="In, Out, Both") String direction, // In, Out, Both
@@ -133,7 +136,6 @@ public class MessageImplementationGuidelinesTools {
         ArrayList<CreateMIGRequest.OwnBusinessContext> partnerBusinessContext
     ) {
         CreateMIGRequest migRequest = client.buildMIGCreateRequest(
-            migVersion, 
             name, 
             summary, 
             messageTemplateId, 
@@ -150,7 +152,7 @@ public class MessageImplementationGuidelinesTools {
             throw new IllegalArgumentException("ownBusinessContext must have at least 1 element");
         }
 
-        return client.createMIG(Config.getRequestContextFromEnv(), migRequest);
+        return ToolUtils.parseJson(client.createMIG(Config.getRequestContextFromEnv(), migRequest));
     }
 
 
@@ -167,8 +169,8 @@ public class MessageImplementationGuidelinesTools {
 
     @Tool(name = "get-mig-proposal", description = "Get Proposal for a MIG. Proposal is the recommendation in % on weather" +
             "a field should be selected or not. ConfidenceValue 1 means 100% confidence")
-    public JsonNode getMigProposal(String migId) {
-        String migResponse = client.getMIGProposal(Config.getRequestContextFromEnv(), migId);
+    public JsonNode getMigProposal(String migVersionId) {
+        String migResponse = client.getMIGProposal(Config.getRequestContextFromEnv(), migVersionId);
         if (migResponse.length() > 999999) {
 
             return ToolUtils.parseJson("MIG response too big to show. If you want to make changes based on proposal try using apply-mig-proposal");
@@ -179,15 +181,14 @@ public class MessageImplementationGuidelinesTools {
 
     @Tool(name = "apply-mig-proposal", description = "Select fields based on MIG proposal. E.g. select all fields which" +
             "have a score over 50%")
-    public String applyMigProposal(String migId, @ToolParam(description = "Minimum Confidence value for proposal in %. 0-100") int confidenceValue) {
-        MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migId);
-        MIGProposalResponse proposalResponse = MIGResponseMapper.fromJsonString(
-                client.getMIGProposal(Config.getRequestContextFromEnv(), migId)
+    public String applyMigProposal(String migVersionId, @ToolParam(description = "Minimum Confidence value for proposal in %. 0-100") int confidenceValue) {
+        MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migVersionId);
+        MIGProposalResponse proposalResponse = MIGProposalResponseMapper.fromJsonString(
+                client.getMIGProposal(Config.getRequestContextFromEnv(), migVersionId)
         );
 
-        MigEntityUtils migEntityUtils = new MigEntityUtils(entity);
-        migEntityUtils.applyMIGProposalRequest(proposalResponse, (float) confidenceValue / 100);
-        return client.updateMIG(Config.getRequestContextFromEnv(), migId, migEntityUtils.getEntity());
+        entity.applyMIGProposalRequest(proposalResponse, (float) confidenceValue / 100);
+        return client.updateMIG(Config.getRequestContextFromEnv(), migVersionId, entity);
     }
     
 }

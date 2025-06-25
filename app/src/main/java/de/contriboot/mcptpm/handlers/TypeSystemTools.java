@@ -3,6 +3,9 @@ package de.contriboot.mcptpm.handlers;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import de.contriboot.mcptpm.api.entities.mapper.TypeSystemMessagesMapper;
+import de.contriboot.mcptpm.utils.JsonUtils;
 import de.contriboot.mcptpm.utils.ToolUtils;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Service;
@@ -28,7 +31,7 @@ public class TypeSystemTools {
 
     @Tool(name = "get-type-system-messages", description = "Get messages of type system")
     public JsonNode getTypeSystemMessage(String typeSystemId) {
-        return ToolUtils.parseJson(
+        return TypeSystemMessagesMapper.fromJsonStringMinified(
                 client.getTypeSystemMessagesRaw(Config.getRequestContextFromEnv(), typeSystemId)
         );
     }
@@ -66,5 +69,20 @@ public class TypeSystemTools {
         return ToolUtils.parseJson(
                 client.getAllBusinessProcessRoles(Config.getRequestContextFromEnv())
         );
+    }
+
+    @Tool(name = "get-type-system-message-full", description = "Get a message fom a type system with all details including versions and revisions")
+    public JsonNode getTypeSystemMessageVersions(String typeSystemId, String messageVertexGUID) {
+        JsonNode allMessages = ToolUtils.parseJson(client.getTypeSystemMessagesRaw(Config.getRequestContextFromEnv(), typeSystemId));
+
+        ArrayNode allMessageList = (ArrayNode) allMessages.get("Message");
+
+        for(JsonNode message : allMessageList) {
+            if(message.get("VertexGUID").asText().equals(messageVertexGUID)) {
+                return message;
+            }
+        }
+
+        throw new IllegalStateException("No message found with GUID: " + messageVertexGUID);
     }
 }

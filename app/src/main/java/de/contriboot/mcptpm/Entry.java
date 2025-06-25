@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.figaf.integration.common.entity.RequestContext;
 import de.contriboot.mcptpm.handlers.*;
 import de.contriboot.mcptpm.utils.Config;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.support.ToolCallbacks;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.method.MethodToolCallback;
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Slf4j
 @SpringBootApplication
 public class Entry {
 
@@ -30,8 +32,9 @@ public class Entry {
             BusinessDocumentTools busDocTools,
             CompanyProfileTools companyProfileTools,
             AgreementTemplateTools agreementTemplateTools,
-            MessageImplementationGuidelinesTools mesImplGuidelinesTools,
-            TypeSystemTools typeSystemTools
+            MessageImplementationGuidelinesTools messageImplementationGuidelinesTools,
+            TypeSystemTools typeSystemTools,
+            MappingGuidelinesTools mappingGuidelinesTools
     ) throws JsonProcessingException {
         return List.of(ToolCallbacks.from(
                 partnerTools,
@@ -39,9 +42,9 @@ public class Entry {
                 busDocTools,
                 companyProfileTools,
                 agreementTemplateTools,
-                mesImplGuidelinesTools,
-                typeSystemTools
-
+                messageImplementationGuidelinesTools,
+                typeSystemTools,
+                mappingGuidelinesTools
         ));
     }
 

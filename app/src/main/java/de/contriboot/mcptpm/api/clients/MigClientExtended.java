@@ -9,18 +9,14 @@ import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
 
 import com.figaf.integration.tpm.client.mig.MessageImplementationGuidelinesClient;
 
-import de.contriboot.mcptpm.api.entities.AgreementEntitiy;
 import de.contriboot.mcptpm.api.entities.mapper.MessageImplementationGuidelineMapper;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import de.contriboot.mcptpm.api.entities.mig.MIGProposalRequest;
-import de.contriboot.mcptpm.api.entities.mig.MigEntityUtils;
 import de.contriboot.mcptpm.utils.JsonUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 
 import java.util.*;
@@ -79,7 +75,6 @@ public class MigClientExtended extends MessageImplementationGuidelinesClient {
     }
 
     public CreateMIGRequest buildMIGCreateRequest(
-            String migVersion,
             String name,
             String summary,
             String messageTemplateId,
@@ -91,7 +86,7 @@ public class MigClientExtended extends MessageImplementationGuidelinesClient {
             String direction, // In, Out, Both
             ArrayList<CreateMIGRequest.OwnBusinessContext> ownBusinessContext) {
         CreateMIGRequest request = new CreateMIGRequest();
-        request.setIdentification(new CreateMIGRequest.Identification(migVersion));
+        request.setIdentification(new CreateMIGRequest.Identification("1.0"));
         request.setDirection(direction);
         request.setStatus("Draft");
 
@@ -165,7 +160,6 @@ public class MigClientExtended extends MessageImplementationGuidelinesClient {
 
     public String getMIGProposal(RequestContext requestContext, String migId) {
         MIGEntity currentEntity = getMigVersionRawObject(requestContext, migId);
-        MigEntityUtils migUtils = new MigEntityUtils(currentEntity);
         //toggleLockMig(requestContext, migId, true);
         return executeMethod(
                 requestContext,
@@ -174,7 +168,7 @@ public class MigClientExtended extends MessageImplementationGuidelinesClient {
                 (url, token, restTemplateWrapper) -> {
                     HttpHeaders httpHeaders = createHttpHeadersWithCSRFToken(token);
                     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-                    HttpEntity<MIGProposalRequest> requestEntity = new HttpEntity<>(migUtils.getMIGProposalRequest(), httpHeaders);
+                    HttpEntity<MIGProposalRequest> requestEntity = new HttpEntity<>(currentEntity.getMIGProposalRequest(), httpHeaders);
                     ResponseEntity<String> responseEntity = restTemplateWrapper.getRestTemplate().exchange(url,
                             HttpMethod.POST, requestEntity, String.class);
                     //toggleLockMig(requestContext, migId, false);
@@ -192,17 +186,16 @@ public class MigClientExtended extends MessageImplementationGuidelinesClient {
 
     public String changeNodeSelection(RequestContext requestContext, List<String> addToSelection, List<String> removeSelection, String migId) {
         MIGEntity currentEntity = getMigVersionRawObject(requestContext, migId);
-        MigEntityUtils migUtils = new MigEntityUtils(currentEntity);
 
         for (String addId : addToSelection) {
-            migUtils.findAndChangeNodeSelection(addId, true);
+            currentEntity.findAndChangeNodeSelection(addId, true);
         }
 
         for (String removeId : removeSelection) {
-            migUtils.findAndChangeNodeSelection(removeId, false);
+            currentEntity.findAndChangeNodeSelection(removeId, false);
         }
 
-        return updateMIG(requestContext, migId, migUtils.getEntity());
+        return updateMIG(requestContext, migId, currentEntity);
     }
 
     public String updateMIG(RequestContext requestContext, String migId, MIGEntity entity) {
