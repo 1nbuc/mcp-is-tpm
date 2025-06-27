@@ -1,16 +1,17 @@
 package de.contriboot.mcptpm.api.entities.mag.proposal.response;
 
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class XslFunctionSnippetValidationResult{
+import java.util.List;
 
-	@JsonProperty("isValid")
-	private boolean isValid;
+public class XslFunctionSnippetValidationResult {
 
-	@JsonProperty("warnings")
-	private List<Object> warnings;
+    @JsonProperty("isValid")
+    private boolean isValid;
 
-	@JsonProperty("errors")
-	private List<Object> errors;
+    @JsonProperty("warnings")
+    private List<Object> warnings;
+
+    @JsonProperty("errors")
+    private List<Object> errors;
 }

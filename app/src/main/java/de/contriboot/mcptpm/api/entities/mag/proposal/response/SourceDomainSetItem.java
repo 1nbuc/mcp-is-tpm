@@ -1,19 +1,20 @@
 package de.contriboot.mcptpm.api.entities.mag.proposal.response;
 
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SourceDomainSetItem{
+import java.util.List;
 
-	@JsonProperty("Position")
-	private int position;
+public class SourceDomainSetItem {
 
-	@JsonProperty("DomainGuid")
-	private String domainGuid;
+    @JsonProperty("Position")
+    private int position;
 
-	@JsonProperty("Roles")
-	private List<String> roles;
+    @JsonProperty("DomainGuid")
+    private String domainGuid;
 
-	@JsonProperty("CodeValueGuid")
-	private String codeValueGuid;
+    @JsonProperty("Roles")
+    private List<String> roles;
+
+    @JsonProperty("CodeValueGuid")
+    private String codeValueGuid;
 }

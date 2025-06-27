@@ -1,9 +1,6 @@
 package de.contriboot.mcptpm.api.entities.mag;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.figaf.integration.common.factory.HttpClientsFactory;
-import de.contriboot.mcptpm.api.clients.TypeSystemClient;
 import de.contriboot.mcptpm.api.entities.mag.proposal.response.MAGProposalResponse;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import lombok.Getter;
@@ -11,7 +8,6 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -48,9 +44,50 @@ public class MAGEntity {
     @JsonProperty("TargetNodeDuplicationRules")
     private ArrayList<Object> targetNodeDuplicationRules;
 
+    public MAGProposalRequest getMAGProposalRequest(
+            MIGEntity targetMigEntity,
+            MIGEntity sourceMigEntity
+    ) {
+        MAGProposalRequest request = new MAGProposalRequest();
+        MAGProposalRequest.Identification identification = new MAGProposalRequest.Identification();
+        identification.setMAGGUID(getIdentification().getMAGGUID());
+        identification.setCustomer(getIdentification().getCustomer());
+        identification.setMAGVersion(getIdentification().getMAGVersion());
+        identification.setMagProposalRequestId(System.currentTimeMillis());
+        identification.setImportCorrelationObjectId(getIdentification().getImportCorrelationObjectId());
+        identification.setImportCorrelationGroupId(getIdentification().getImportCorrelationGroupId());
+        identification.setObjectGuid(getIdentification().getObjectGuid());
+        request.setIdentification(identification);
+
+        request.setMagProposalRequestSchemaVersion("1.0");
+
+        request.setSourceBusinessContext(getSourceBusinessContext());
+        request.setTargetBusinessContext(getTargetBusinessContext());
+
+        request.setTargetDomainGuids(targetMigEntity.getDomainGuidsWithCodeValues());
+        request.setSourceDomainGuids(sourceMigEntity.getDomainGuidsWithCodeValues());
+
+        request.setSourceMig(getSourceMig());
+        request.setTargetMig(getTargetMig());
+
+        request.setSourceMessageTemplate(sourceMigEntity.getMessageTemplate());
+        request.setTargetMessageTemplate(targetMigEntity.getMessageTemplate());
+
+        MAGProposalRequest.MagValidationRelevantInformation magValidationRelevantInformation = new MAGProposalRequest.MagValidationRelevantInformation();
+        magValidationRelevantInformation.setSharedVariables(new ArrayList<>());
+        request.setMagValidationRelevantInformation(magValidationRelevantInformation);
+
+        return request;
+    }
+
+    public void applyMAGProposal(MAGProposalResponse magProposalResponse) {
+
+
+    }
+
     @Getter
     @Setter
-    public static class SharedVariable{
+    public static class SharedVariable {
         @JsonProperty("VariableGuid")
         private String variableGuid;
         @JsonProperty("Name")
@@ -67,34 +104,6 @@ public class MAGEntity {
         private String modifiedBy;
         @JsonProperty("ModifiedOn")
         private Date modifiedOn;
-    }
-
-    @Getter
-    @Setter
-    public class SharedFunction{
-        @JsonProperty("Name")
-        private String name;
-        @JsonProperty("DocumentationHtmlMode")
-        private boolean documentationHtmlMode;
-        @JsonProperty("Confidential")
-        private boolean confidential;
-        @JsonProperty("Origin")
-        private String origin;
-        @JsonProperty("CreatedBy")
-        private String createdBy;
-        @JsonProperty("CreatedOn")
-        private Date createdOn;
-        @JsonProperty("ModifiedBy")
-        private String modifiedBy;
-        @JsonProperty("ModifiedOn")
-        private Date modifiedOn;
-        @JsonProperty("IsCondition")
-        private boolean isCondition;
-        @JsonProperty("FunctionGuid")
-        private String functionGuid;
-        @JsonProperty("FunctionImplementations")
-        private ArrayList<FunctionImplementation> functionImplementations;
-        private boolean isReference;
     }
 
     @Setter
@@ -160,7 +169,7 @@ public class MAGEntity {
 
     @Getter
     @Setter
-    public static class Note{
+    public static class Note {
         @JsonProperty("ArtifactValue")
         private ArtifactValue artifactValue;
         @JsonProperty("Properties")
@@ -169,7 +178,7 @@ public class MAGEntity {
 
     @Getter
     @Setter
-    public static class Category{
+    public static class Category {
         @JsonProperty("ArtifactValue")
         private ArtifactValue artifactValue;
         @JsonProperty("PropertyName")
@@ -178,13 +187,12 @@ public class MAGEntity {
 
     @Getter
     @Setter
-    public static class Properties{
+    public static class Properties {
         @JsonProperty("Category")
         private Category category;
         @JsonProperty("Number")
         private Number number;
     }
-
 
     @Setter
     @Getter
@@ -289,7 +297,6 @@ public class MAGEntity {
         private int positionInDomainSet;
     }
 
-
     @Setter
     @Getter
     public static class SourceBusinessContext {
@@ -365,44 +372,31 @@ public class MAGEntity {
         private ArrayList<ParameterAssignment> parameterAssignments;
     }
 
-    public MAGProposalRequest getMAGProposalRequest(
-            MIGEntity targetMigEntity,
-            MIGEntity sourceMigEntity
-    ) {
-        MAGProposalRequest request = new MAGProposalRequest();
-        MAGProposalRequest.Identification identification = new MAGProposalRequest.Identification();
-        identification.setMAGGUID(getIdentification().getMAGGUID());
-        identification.setCustomer(getIdentification().getCustomer());
-        identification.setMAGVersion(getIdentification().getMAGVersion());
-        identification.setMagProposalRequestId(System.currentTimeMillis());
-        identification.setImportCorrelationObjectId(getIdentification().getImportCorrelationObjectId());
-        identification.setImportCorrelationGroupId(getIdentification().getImportCorrelationGroupId());
-        identification.setObjectGuid(getIdentification().getObjectGuid());
-        request.setIdentification(identification);
-
-        request.setMagProposalRequestSchemaVersion("1.0");
-
-        request.setSourceBusinessContext(getSourceBusinessContext());
-        request.setTargetBusinessContext(getTargetBusinessContext());
-
-        request.setTargetDomainGuids(targetMigEntity.getDomainGuidsWithCodeValues());
-        request.setSourceDomainGuids(sourceMigEntity.getDomainGuidsWithCodeValues());
-
-        request.setSourceMig(getSourceMig());
-        request.setTargetMig(getTargetMig());
-
-        request.setSourceMessageTemplate(sourceMigEntity.getMessageTemplate());
-        request.setTargetMessageTemplate(targetMigEntity.getMessageTemplate());
-
-        MAGProposalRequest.MagValidationRelevantInformation magValidationRelevantInformation = new MAGProposalRequest.MagValidationRelevantInformation();
-        magValidationRelevantInformation.setSharedVariables(new ArrayList<>());
-        request.setMagValidationRelevantInformation(magValidationRelevantInformation);
-
-        return request;
-    }
-
-    public void applyMAGProposal(MAGProposalResponse magProposalResponse) {
-
-
+    @Getter
+    @Setter
+    public class SharedFunction {
+        @JsonProperty("Name")
+        private String name;
+        @JsonProperty("DocumentationHtmlMode")
+        private boolean documentationHtmlMode;
+        @JsonProperty("Confidential")
+        private boolean confidential;
+        @JsonProperty("Origin")
+        private String origin;
+        @JsonProperty("CreatedBy")
+        private String createdBy;
+        @JsonProperty("CreatedOn")
+        private Date createdOn;
+        @JsonProperty("ModifiedBy")
+        private String modifiedBy;
+        @JsonProperty("ModifiedOn")
+        private Date modifiedOn;
+        @JsonProperty("IsCondition")
+        private boolean isCondition;
+        @JsonProperty("FunctionGuid")
+        private String functionGuid;
+        @JsonProperty("FunctionImplementations")
+        private ArrayList<FunctionImplementation> functionImplementations;
+        private boolean isReference;
     }
 }

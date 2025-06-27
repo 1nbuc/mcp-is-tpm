@@ -13,11 +13,11 @@ public class Config {
         requestContext.setWebApiAccessMode(WebApiAccessMode.SAP_UNIVERSAL_ID);
         requestContext.setConnectionProperties(
                 new ConnectionProperties(
-                        Config.getEnvVar("CPI_URL") ,
-                        Config.getEnvVar("CPI_USER") ,
+                        Config.getEnvVar("CPI_URL"),
+                        Config.getEnvVar("CPI_USER"),
                         Config.getEnvVar("CPI_PASSWORD")
                 ));
-        requestContext.setUniversalAuthAccountId(Config.getEnvVar("CPI_UNIVERSAL_AUTH_ACCOUNT_ID") );
+        requestContext.setUniversalAuthAccountId(Config.getEnvVar("CPI_UNIVERSAL_AUTH_ACCOUNT_ID"));
 
         return requestContext;
     }

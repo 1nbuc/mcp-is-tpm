@@ -1,25 +1,22 @@
 package de.contriboot.mcptpm.handlers;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.figaf.integration.common.factory.HttpClientsFactory;
+import de.contriboot.mcptpm.api.clients.TypeSystemClient;
 import de.contriboot.mcptpm.api.entities.mapper.TypeSystemMessagesMapper;
-import de.contriboot.mcptpm.utils.JsonUtils;
+import de.contriboot.mcptpm.api.entities.typeSystem.AllTypeSystemsResponse;
+import de.contriboot.mcptpm.utils.Config;
 import de.contriboot.mcptpm.utils.ToolUtils;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 
-import com.figaf.integration.common.factory.HttpClientsFactory;
-
-import de.contriboot.mcptpm.api.clients.TypeSystemClient;
-import de.contriboot.mcptpm.api.entities.typeSystem.AllTypeSystemsResponse;
-import de.contriboot.mcptpm.utils.Config;
+import java.util.List;
 
 @Service
 public class TypeSystemTools {
-    private TypeSystemClient client;
+    private final TypeSystemClient client;
 
     public TypeSystemTools() {
         this.client = new TypeSystemClient(new HttpClientsFactory());
@@ -97,8 +94,8 @@ public class TypeSystemTools {
 
         ArrayNode allMessageList = (ArrayNode) allMessages.get("Message");
 
-        for(JsonNode message : allMessageList) {
-            if(message.get("VertexGUID").asText().equals(messageVertexGUID)) {
+        for (JsonNode message : allMessageList) {
+            if (message.get("VertexGUID").asText().equals(messageVertexGUID)) {
                 return message;
             }
         }

@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MAGSimulationResponse{
+public class MAGSimulationResponse {
     @JsonProperty("targetPayload")
     private String targetPayload;
 }

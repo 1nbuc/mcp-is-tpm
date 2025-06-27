@@ -1,29 +1,20 @@
 package de.contriboot.mcptpm.api.clients;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.figaf.integration.common.entity.RequestContext;
 import com.figaf.integration.common.exception.ClientIntegrationException;
 import com.figaf.integration.common.factory.HttpClientsFactory;
-
-import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
-
 import com.figaf.integration.tpm.client.mig.MessageImplementationGuidelinesClient;
-
 import de.contriboot.mcptpm.api.entities.mapper.MessageImplementationGuidelineMapper;
+import de.contriboot.mcptpm.api.entities.mig.CreateMIGRequest;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import de.contriboot.mcptpm.api.entities.mig.MIGProposalRequest;
 import de.contriboot.mcptpm.utils.JsonUtils;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 
 import java.util.*;
 
+import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
 import static java.lang.String.format;
-
-import de.contriboot.mcptpm.api.entities.mig.CreateMIGRequest;
 
 public class MigClientExtended extends MessageImplementationGuidelinesClient {
 
@@ -224,14 +215,15 @@ public class MigClientExtended extends MessageImplementationGuidelinesClient {
     private String generateGUID() {
         UUID uuid = UUID.randomUUID();
         // Format it with the "UID-" prefix
-        return "UID-" + uuid.toString();
+        return "UID-" + uuid;
     }
 
     /**
      * Lock or onlock a MIG
+     *
      * @param requestContext
      * @param migId
-     * @param lock False: unlocks, True: locks the artifact
+     * @param lock           False: unlocks, True: locks the artifact
      */
     private void toggleLockMig(RequestContext requestContext, String migId, boolean lock) {
         String lockUrl = format(LOCK_RESOURCE_FORMAT, migId, lock ? "LOCK" : "UNLOCK");

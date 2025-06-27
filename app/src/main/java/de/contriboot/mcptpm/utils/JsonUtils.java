@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
@@ -39,7 +39,7 @@ public class JsonUtils {
             zipOutputStream.putNextEntry(entry);
 
             // Write JSON content to zip
-            zipOutputStream.write(jsonString.getBytes("UTF-8"));
+            zipOutputStream.write(jsonString.getBytes(StandardCharsets.UTF_8));
             zipOutputStream.closeEntry();
         }
 

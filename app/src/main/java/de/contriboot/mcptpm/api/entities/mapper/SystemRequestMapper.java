@@ -11,7 +11,8 @@ public class SystemRequestMapper {
 
     public static List<PartnerSystemEntity> fromJsonArraListString(String jsonString) {
         try {
-            return objectMapper.readValue(jsonString, new TypeReference<List<PartnerSystemEntity>>() {});
+            return objectMapper.readValue(jsonString, new TypeReference<List<PartnerSystemEntity>>() {
+            });
         } catch (Exception e) {
             throw new RuntimeException("Error mapping JSON string to AgreementTemplateEntity", e);
         }

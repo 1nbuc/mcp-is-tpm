@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public class CompanyProfileTools {
 
-    private CompanyProfileClient client;
+    private final CompanyProfileClient client;
 
     public CompanyProfileTools() {
         this.client = new CompanyProfileClient(new HttpClientsFactory());

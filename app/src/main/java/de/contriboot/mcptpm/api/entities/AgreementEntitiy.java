@@ -1,11 +1,7 @@
 package de.contriboot.mcptpm.api.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.contriboot.mcptpm.api.entities.shared.TradingPartnerDetails;
-import de.contriboot.mcptpm.api.entities.shared.TransactionOption;
-import de.contriboot.mcptpm.api.entities.shared.CompanyData;
-import de.contriboot.mcptpm.api.entities.shared.CommunicationPartnerData;
-import de.contriboot.mcptpm.api.entities.shared.TradingPartnerData;
+import de.contriboot.mcptpm.api.entities.shared.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;

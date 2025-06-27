@@ -2,11 +2,11 @@ package de.contriboot.mcptpm.api.entities.mag.proposal.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Metadata{
+public class Metadata {
 
-	@JsonProperty("requestTime")
-	private long requestTime;
+    @JsonProperty("requestTime")
+    private long requestTime;
 
-	@JsonProperty("status")
-	private String status;
+    @JsonProperty("status")
+    private String status;
 }

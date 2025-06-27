@@ -14,8 +14,6 @@ import java.util.List;
 @Getter
 @Setter
 public class MAGProposalRequest {
-    @JsonProperty("MagProposalRequestSchemaVersion")
-    private String magProposalRequestSchemaVersion;
     @JsonProperty("Identification")
     public Identification identification;
     @JsonProperty("SourceBusinessContext")
@@ -36,7 +34,8 @@ public class MAGProposalRequest {
     public MIGEntity.MessageTemplate targetMessageTemplate;
     @JsonProperty("MagValidationRelevantInformation")
     public MagValidationRelevantInformation magValidationRelevantInformation;
-
+    @JsonProperty("MagProposalRequestSchemaVersion")
+    private String magProposalRequestSchemaVersion;
 
     @Getter
     @Setter

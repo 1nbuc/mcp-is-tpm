@@ -4,11 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.figaf.integration.common.factory.HttpClientsFactory;
-import com.figaf.integration.tpm.client.trading.TradingPartnerClient;
-import com.figaf.integration.tpm.entity.trading.System;
-import com.figaf.integration.tpm.entity.trading.verbose.TradingPartnerVerboseDto;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
 import com.figaf.integration.tpm.entity.trading.*;
+import com.figaf.integration.tpm.entity.trading.System;
+import com.figaf.integration.tpm.entity.trading.verbose.TradingPartnerVerboseDto;
 import de.contriboot.mcptpm.api.clients.TradingPartnerClientExtended;
 import de.contriboot.mcptpm.api.entities.PartnerSystemEntity;
 import de.contriboot.mcptpm.utils.Config;
@@ -24,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class PartnerTools  {
+public class PartnerTools {
 
-    private TradingPartnerClientExtended client;
-    private ObjectMapper objectMapper = new ObjectMapper(); // For JSON deserialization
+    private final TradingPartnerClientExtended client;
+    private final ObjectMapper objectMapper = new ObjectMapper(); // For JSON deserialization
 
     public PartnerTools() {
         this.client = new TradingPartnerClientExtended(new HttpClientsFactory());
@@ -134,7 +133,8 @@ public class PartnerTools  {
 
         if (configurationPropertiesJson != null && !configurationPropertiesJson.isEmpty()) {
             try {
-                TypeReference<HashMap<String, CreateCommunicationRequest.Attribute>> typeRef = new TypeReference<HashMap<String, CreateCommunicationRequest.Attribute>>() {};
+                TypeReference<HashMap<String, CreateCommunicationRequest.Attribute>> typeRef = new TypeReference<HashMap<String, CreateCommunicationRequest.Attribute>>() {
+                };
                 Map<String, CreateCommunicationRequest.Attribute> propsMap = objectMapper.readValue(configurationPropertiesJson, typeRef);
                 CreateCommunicationRequest.ConfigurationProperties configProps = new CreateCommunicationRequest.ConfigurationProperties();
                 configProps.setAllAttributes(propsMap);
@@ -183,12 +183,15 @@ public class PartnerTools  {
             @ToolParam(description = "Verify MIC (Message Integrity Check)?") boolean verifyMIC,
             @ToolParam(description = "Public key alias for verification", required = false) String publicKeyAliasForVerification) {
         CreateSignatureVerificationConfigurationsRequest request = new CreateSignatureVerificationConfigurationsRequest();
-        if (artifactType != null) request.setArtifactType(artifactType); else request.setArtifactType("TRADING_PARTNER"); // set default if null
-        if (verificationOption != null) request.setVerificationOption(verificationOption); else request.setVerificationOption("NotRequired"); // set default if null
+        if (artifactType != null) request.setArtifactType(artifactType);
+        else request.setArtifactType("TRADING_PARTNER"); // set default if null
+        if (verificationOption != null) request.setVerificationOption(verificationOption);
+        else request.setVerificationOption("NotRequired"); // set default if null
         if (as2PartnerId != null) request.setAs2PartnerId(as2PartnerId);
         if (alias != null) request.setAlias(alias);
         request.setVerifyMIC(verifyMIC);
-        if (publicKeyAliasForVerification != null) request.setPublicKeyAliasForVerification(publicKeyAliasForVerification);
+        if (publicKeyAliasForVerification != null)
+            request.setPublicKeyAliasForVerification(publicKeyAliasForVerification);
 
         client.createSignatureVerificationConfigurationsRequest(partnerId, request, Config.getRequestContextFromEnv());
         return "success";

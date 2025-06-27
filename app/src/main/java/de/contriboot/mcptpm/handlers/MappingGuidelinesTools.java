@@ -1,25 +1,17 @@
 package de.contriboot.mcptpm.handlers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import de.contriboot.mcptpm.api.clients.MappingGuidelineClient;
 import de.contriboot.mcptpm.api.clients.MigClientExtended;
 import de.contriboot.mcptpm.api.clients.TypeSystemClient;
-import de.contriboot.mcptpm.api.entities.mag.MAGEntity;
-import de.contriboot.mcptpm.api.entities.mag.MAGProposalRequest;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import de.contriboot.mcptpm.utils.Config;
 import de.contriboot.mcptpm.utils.ToolUtils;
 import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class MappingGuidelinesTools {
@@ -63,7 +55,7 @@ public class MappingGuidelinesTools {
     @Tool(name = "get-all-mags-metadata", description = "Get an overview of available Mapping guidelines")
     public JsonNode getAllMagsMetadata() {
         return ToolUtils.parseJson(client.getMAGMetadata(Config.getRequestContextFromEnv()));
-    };
+    }
 
     // Not implemented for now. Maybe in the future. the application is way too complex and can be done with two clicks in browser
 //    @Tool(name = "apply-mag-proposal", description = "Apply fieldmapping based on MAG proposal. E.g. Map all fields " +

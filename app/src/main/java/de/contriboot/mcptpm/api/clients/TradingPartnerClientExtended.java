@@ -13,7 +13,7 @@ import java.util.List;
 import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
 import static java.lang.String.format;
 
-public class TradingPartnerClientExtended  extends TradingPartnerClient {
+public class TradingPartnerClientExtended extends TradingPartnerClient {
     public static final String SECURITY_CONFIG_ACTIVATE_FORMAT = "/itspaces/tpm/tradingpartners/%s/config.signval?deploy=%s";
 
     public TradingPartnerClientExtended(HttpClientsFactory httpClientsFactory) {

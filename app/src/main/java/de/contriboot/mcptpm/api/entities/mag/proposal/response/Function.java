@@ -1,19 +1,20 @@
 package de.contriboot.mcptpm.api.entities.mag.proposal.response;
 
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Function{
+import java.util.List;
 
-	@JsonProperty("FunctionImplementations")
-	private List<FunctionImplementationsItem> functionImplementations;
+public class Function {
 
-	@JsonProperty("isReference")
-	private boolean isReference;
+    @JsonProperty("FunctionImplementations")
+    private List<FunctionImplementationsItem> functionImplementations;
 
-	@JsonProperty("FunctionParameters")
-	private List<FunctionParametersItem> functionParameters;
+    @JsonProperty("isReference")
+    private boolean isReference;
 
-	@JsonProperty("FunctionGuid")
-	private String functionGuid;
+    @JsonProperty("FunctionParameters")
+    private List<FunctionParametersItem> functionParameters;
+
+    @JsonProperty("FunctionGuid")
+    private String functionGuid;
 }

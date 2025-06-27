@@ -68,7 +68,7 @@ public class MIGProposalResponse {
 
     @Getter
     @Setter
-    public static class QualifierValue{
+    public static class QualifierValue {
         @JsonProperty("VertexGUID")
         public String vertexGUID;
         @JsonProperty("QualifierValue")
@@ -82,7 +82,6 @@ public class MIGProposalResponse {
         @JsonProperty("CodelistID")
         public String codelistID;
     }
-
 
 
     @Getter

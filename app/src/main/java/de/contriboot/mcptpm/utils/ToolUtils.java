@@ -83,6 +83,7 @@ public class ToolUtils {
     /**
      * Try to parse a JSON for better MCP tool output withot class specification
      * If parsing fails it will return a object like this { response: <raw arguent> }
+     *
      * @param jsonRaw
      * @return
      */

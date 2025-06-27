@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 public class AgreementTemplateTools {
 
-    private AgreementTemplateClientExtended client;
+    private final AgreementTemplateClientExtended client;
 
     public AgreementTemplateTools() {
         this.client = new AgreementTemplateClientExtended(new HttpClientsFactory());

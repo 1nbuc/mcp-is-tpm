@@ -20,7 +20,7 @@ import java.util.TimeZone;
 
 @Service
 public class BusinessDocumentTools {
-    private BusinessDocumentsClient client;
+    private final BusinessDocumentsClient client;
 
     public BusinessDocumentTools() {
         this.client = new BusinessDocumentsClient(new HttpClientsFactory());
@@ -69,14 +69,22 @@ public class BusinessDocumentTools {
         interchangeRequest.setRightBoundDate(parseIso8601Date(rightBoundDateStr));
         if (overallStatuses != null) interchangeRequest.setOverallStatuses(overallStatuses);
         if (processingStatuses != null) interchangeRequest.setProcessingStatuses(processingStatuses);
-        if (agreedSenderIdentiferAtSenderSide != null) interchangeRequest.setAgreedSenderIdentiferAtSenderSide(agreedSenderIdentiferAtSenderSide);
-        if (agreedSenderIdentiferQualifierAtSenderSide != null) interchangeRequest.setAgreedSenderIdentiferQualifierAtSenderSide(agreedSenderIdentiferQualifierAtSenderSide);
-        if (agreedReceiverIdentiferAtSenderSide != null) interchangeRequest.setAgreedReceiverIdentiferAtSenderSide(agreedReceiverIdentiferAtSenderSide);
-        if (agreedReceiverIdentiferQualifierAtSenderSide != null) interchangeRequest.setAgreedReceiverIdentiferQualifierAtSenderSide(agreedReceiverIdentiferQualifierAtSenderSide);
-        if (agreedSenderIdentiferAtReceiverSide != null) interchangeRequest.setAgreedSenderIdentiferAtReceiverSide(agreedSenderIdentiferAtReceiverSide);
-        if (agreedSenderIdentiferQualifierAtReceiverSide != null) interchangeRequest.setAgreedSenderIdentiferQualifierAtReceiverSide(agreedSenderIdentiferQualifierAtReceiverSide);
-        if (agreedReceiverIdentiferAtReceiverSide != null) interchangeRequest.setAgreedReceiverIdentiferAtReceiverSide(agreedReceiverIdentiferAtReceiverSide);
-        if (agreedReceiverIdentiferQualifierAtReceiverSide != null) interchangeRequest.setAgreedReceiverIdentiferQualifierAtReceiverSide(agreedReceiverIdentiferQualifierAtReceiverSide);
+        if (agreedSenderIdentiferAtSenderSide != null)
+            interchangeRequest.setAgreedSenderIdentiferAtSenderSide(agreedSenderIdentiferAtSenderSide);
+        if (agreedSenderIdentiferQualifierAtSenderSide != null)
+            interchangeRequest.setAgreedSenderIdentiferQualifierAtSenderSide(agreedSenderIdentiferQualifierAtSenderSide);
+        if (agreedReceiverIdentiferAtSenderSide != null)
+            interchangeRequest.setAgreedReceiverIdentiferAtSenderSide(agreedReceiverIdentiferAtSenderSide);
+        if (agreedReceiverIdentiferQualifierAtSenderSide != null)
+            interchangeRequest.setAgreedReceiverIdentiferQualifierAtSenderSide(agreedReceiverIdentiferQualifierAtSenderSide);
+        if (agreedSenderIdentiferAtReceiverSide != null)
+            interchangeRequest.setAgreedSenderIdentiferAtReceiverSide(agreedSenderIdentiferAtReceiverSide);
+        if (agreedSenderIdentiferQualifierAtReceiverSide != null)
+            interchangeRequest.setAgreedSenderIdentiferQualifierAtReceiverSide(agreedSenderIdentiferQualifierAtReceiverSide);
+        if (agreedReceiverIdentiferAtReceiverSide != null)
+            interchangeRequest.setAgreedReceiverIdentiferAtReceiverSide(agreedReceiverIdentiferAtReceiverSide);
+        if (agreedReceiverIdentiferQualifierAtReceiverSide != null)
+            interchangeRequest.setAgreedReceiverIdentiferQualifierAtReceiverSide(agreedReceiverIdentiferQualifierAtReceiverSide);
         if (senderAdapterType != null) interchangeRequest.setSenderAdapterType(senderAdapterType);
         if (senderDocumentStandard != null) interchangeRequest.setSenderDocumentStandard(senderDocumentStandard);
         if (senderMessageType != null) interchangeRequest.setSenderMessageType(senderMessageType);

@@ -1,13 +1,5 @@
 package de.contriboot.mcptpm.api.clients;
 
-import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
-import static java.lang.String.format;
-
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,19 +8,22 @@ import com.figaf.integration.common.entity.RequestContext;
 import com.figaf.integration.common.exception.ClientIntegrationException;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import com.figaf.integration.tpm.client.TpmBaseClient;
-
 import de.contriboot.mcptpm.api.entities.deploy.CreateDeployRequest;
-import de.contriboot.mcptpm.api.entities.mag.MAGCreateEntity;
 import de.contriboot.mcptpm.api.entities.mapper.TypeSystemsMapper;
 import de.contriboot.mcptpm.api.entities.typeSystem.AllTypeSystemsResponse;
 import de.contriboot.mcptpm.utils.ToolUtils;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.*;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpServerErrorException;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
+import static java.lang.String.format;
 
 public class TypeSystemClient extends TpmBaseClient {
     public static final String TYPE_MESSAGE_VERSIONS_FORMAT = "/api/1.0/typesystems/%s?artifacttype=Message&filter=messagesOnly";
@@ -69,41 +64,20 @@ public class TypeSystemClient extends TpmBaseClient {
         return executeMethod(requestContext, PATH_FOR_TOKEN,
                 typeSystem.equals("Customer_TS") ? CUSTOM_TYPE_SYSTEM_MESSAGES_RESOURCE : format(TYPE_MESSAGE_VERSIONS_FORMAT, typeSystem),
                 (url, token, restTemplateWrapper) -> {
-            HttpHeaders httpHeaders = createHttpHeadersWithCSRFToken(token);
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<CreateDeployRequest> requestEntity = new HttpEntity<>(httpHeaders);
-            ResponseEntity<String> responseEntity = restTemplateWrapper.getRestTemplate().exchange(url, HttpMethod.GET, requestEntity, String.class);
-            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                throw new ClientIntegrationException(format(
-                        "Couldn't get type system messages. Code: %d, Message: %s",
-                        responseEntity.getStatusCode().value(),
-                        requestEntity.getBody())
-                );
-            }
+                    HttpHeaders httpHeaders = createHttpHeadersWithCSRFToken(token);
+                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    HttpEntity<CreateDeployRequest> requestEntity = new HttpEntity<>(httpHeaders);
+                    ResponseEntity<String> responseEntity = restTemplateWrapper.getRestTemplate().exchange(url, HttpMethod.GET, requestEntity, String.class);
+                    if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                        throw new ClientIntegrationException(format(
+                                "Couldn't get type system messages. Code: %d, Message: %s",
+                                responseEntity.getStatusCode().value(),
+                                requestEntity.getBody())
+                        );
+                    }
 
-            return responseEntity.getBody();
-        });
-    }
-
-    @Getter
-    @Builder
-    private static class CustomTypeMessageRequest {
-        private String identifier;
-        private String name;
-        @Builder.Default
-        private String version = "1.0";
-        @Builder.Default
-        private String definition = "";
-        @Builder.Default
-        private boolean takenFromXSD = false;
-        private String tsVertexGuid;
-        @Builder.Default
-        private String typeSystemId = "Customer_TS";
-        @Builder.Default
-        private String syntaxType = "XML";
-        private String selectedMessageName;
-        private String selecteMessageNamespace;
-
+                    return responseEntity.getBody();
+                });
     }
 
     public String createCustomMessage(RequestContext requestContext, String messageName, String xsdPayload, String selectedMessageElem, String selectedMessageNamespace) {
@@ -171,8 +145,6 @@ public class TypeSystemClient extends TpmBaseClient {
                 });
 
 
-
-
     }
 
     private String getCustomerTsVertexGUID(RequestContext requestContext) {
@@ -183,33 +155,33 @@ public class TypeSystemClient extends TpmBaseClient {
     }
 
     public String getAllBusinessProcesses(RequestContext requestContext) {
-        return executeGet(requestContext, BUSINESS_PROCESS_RESOURCE, (response) -> response );
+        return executeGet(requestContext, BUSINESS_PROCESS_RESOURCE, (response) -> response);
     }
 
     public String getAllIndustryClassifications(RequestContext requestContext) {
-        return executeGet(requestContext, INDUSTRY_CLASSIFICATION_RESOURCE, (response) -> response );
+        return executeGet(requestContext, INDUSTRY_CLASSIFICATION_RESOURCE, (response) -> response);
     }
 
     public String getAllProductClassifications(RequestContext requestContext) {
-        return executeGet(requestContext, PRODUCT_CLASSIFICATION_RESOURCE, (response) -> response );
+        return executeGet(requestContext, PRODUCT_CLASSIFICATION_RESOURCE, (response) -> response);
     }
 
     public String getAllCountries(RequestContext requestContext) {
-        return executeGet(requestContext, GEOPOLITICAL_RESOURCE, (response) -> response );
+        return executeGet(requestContext, GEOPOLITICAL_RESOURCE, (response) -> response);
     }
 
     public String getAllBusinessProcessRoles(RequestContext requestContext) {
-        return executeGet(requestContext, BUSINESS_PROCESS_ROLE_RESOURCE, (response) -> response );
+        return executeGet(requestContext, BUSINESS_PROCESS_ROLE_RESOURCE, (response) -> response);
     }
 
     public JsonNode getCodelistValues(RequestContext requestContext, String typeSystem, String version, String codeListId) {
         String uri = format(CODE_VALUE_FORMAT, typeSystem, version, codeListId).replace(" ", "%20");
 
-            return executeGet(
-                    requestContext,
-                    uri.toString(),
-                    (response) -> ToolUtils.parseJson(response)
-            );
+        return executeGet(
+                requestContext,
+                uri,
+                (response) -> ToolUtils.parseJson(response)
+        );
 
     }
 
@@ -226,7 +198,7 @@ public class TypeSystemClient extends TpmBaseClient {
         try {
             allCodes = (ArrayNode) executeGet(
                     requestContext,
-                    uri.toString(),
+                    uri,
                     (response) -> ToolUtils.parseJson(response).get("Codes")
             );
         } catch (Exception e) {
@@ -234,19 +206,40 @@ public class TypeSystemClient extends TpmBaseClient {
         }
 
 
-         List<String> resultGuids = new ArrayList<>();
+        List<String> resultGuids = new ArrayList<>();
 
-         for (JsonNode code : allCodes) {
-             if (allCodesSelected) {
-                 resultGuids.add(code.get("VertexGUID").asText());
-                 continue;
-             }
+        for (JsonNode code : allCodes) {
+            if (allCodesSelected) {
+                resultGuids.add(code.get("VertexGUID").asText());
+                continue;
+            }
 
             if (selectedCodes.contains(code.get("Id").asText())) {
                 resultGuids.add(code.get("VertexGUID").asText());
             }
-         }
+        }
 
-         return resultGuids;
+        return resultGuids;
+    }
+
+    @Getter
+    @Builder
+    private static class CustomTypeMessageRequest {
+        private String identifier;
+        private String name;
+        @Builder.Default
+        private String version = "1.0";
+        @Builder.Default
+        private String definition = "";
+        @Builder.Default
+        private boolean takenFromXSD = false;
+        private String tsVertexGuid;
+        @Builder.Default
+        private String typeSystemId = "Customer_TS";
+        @Builder.Default
+        private String syntaxType = "XML";
+        private String selectedMessageName;
+        private String selecteMessageNamespace;
+
     }
 }

@@ -23,7 +23,6 @@ public class CreateDeployRequest {
     private TaskParameters taskParameters;
 
 
-
     @Getter
     @Setter
     public static class TaskInput {

@@ -1,19 +1,19 @@
 package de.contriboot.mcptpm.api.entities.mapper;
 
-import java.util.List;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.contriboot.mcptpm.api.entities.typeSystem.AllTypeSystemsResponse;
 
-public class TypeSystemsMapper {
-        private static final ObjectMapper objectMapper = new ObjectMapper();
+import java.util.List;
 
-        // Remove image file payload because it uses way too much tokens
+public class TypeSystemsMapper {
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    // Remove image file payload because it uses way too much tokens
     public static List<AllTypeSystemsResponse> fromJsonString(String jsonString) {
         try {
-            List<AllTypeSystemsResponse> responseEntity = objectMapper.readValue(jsonString, new TypeReference<List<AllTypeSystemsResponse>>() {});
+            List<AllTypeSystemsResponse> responseEntity = objectMapper.readValue(jsonString, new TypeReference<List<AllTypeSystemsResponse>>() {
+            });
             responseEntity.stream().forEach(elem -> elem.setLogo(null));
             return responseEntity;
         } catch (Exception e) {

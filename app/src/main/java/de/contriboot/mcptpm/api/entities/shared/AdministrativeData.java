@@ -22,6 +22,4 @@ public class AdministrativeData {
     private String modifiedBy;
 
 
-
-
 }

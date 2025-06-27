@@ -2,7 +2,6 @@ package de.contriboot.mcptpm.api.entities.mapper;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.contriboot.mcptpm.api.entities.mag.MAGEntity;
 import de.contriboot.mcptpm.api.entities.mag.MAGSimulationResponse;
 import lombok.extern.slf4j.Slf4j;
 

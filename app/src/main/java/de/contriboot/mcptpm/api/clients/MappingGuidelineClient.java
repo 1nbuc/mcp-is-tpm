@@ -40,7 +40,6 @@ public class MappingGuidelineClient extends TpmBaseClient {
     }
 
 
-
     public String createMappingGuideline(
             RequestContext requestContext,
             String sourceTypeSystemId,
@@ -57,20 +56,20 @@ public class MappingGuidelineClient extends TpmBaseClient {
                 PATH_FOR_TOKEN,
                 MAPPING_GUIDELINE_RESOURCE,
                 (url, token, restTemplateWrapper) -> {
-            HttpHeaders httpHeaders = createHttpHeadersWithCSRFToken(token);
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<MAGCreateEntity> requestEntity = new HttpEntity<>(entity, httpHeaders);
-            ResponseEntity<String> responseEntity = restTemplateWrapper.getRestTemplate().exchange(url,
-                    HttpMethod.POST, requestEntity, String.class);
-            if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                throw new ClientIntegrationException(format(
-                        "Couldn't create MAG. Code: %d, Message: %s",
-                        responseEntity.getStatusCode().value(),
-                        requestEntity.getBody()));
-            }
+                    HttpHeaders httpHeaders = createHttpHeadersWithCSRFToken(token);
+                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    HttpEntity<MAGCreateEntity> requestEntity = new HttpEntity<>(entity, httpHeaders);
+                    ResponseEntity<String> responseEntity = restTemplateWrapper.getRestTemplate().exchange(url,
+                            HttpMethod.POST, requestEntity, String.class);
+                    if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                        throw new ClientIntegrationException(format(
+                                "Couldn't create MAG. Code: %d, Message: %s",
+                                responseEntity.getStatusCode().value(),
+                                requestEntity.getBody()));
+                    }
 
-            return responseEntity.getBody();
-        });
+                    return responseEntity.getBody();
+                });
     }
 
     public MAGCreateEntity createMappingGuidelineEntity(
@@ -176,6 +175,6 @@ public class MappingGuidelineClient extends TpmBaseClient {
     private String generateGUID() {
         UUID uuid = UUID.randomUUID();
         // Format it with the "UID-" prefix
-        return "UID-" + uuid.toString();
+        return "UID-" + uuid;
     }
 }

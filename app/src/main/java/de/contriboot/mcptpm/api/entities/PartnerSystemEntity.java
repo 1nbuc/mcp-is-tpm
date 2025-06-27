@@ -31,19 +31,14 @@ public class PartnerSystemEntity extends CreateSystemRequest {
 
     @JsonProperty("ArtifactRelations")
     ArtifactRelations artifactRelations = new ArtifactRelations();
-
-    @JsonProperty("uniqueId")
-    private String uniqueId;
-
     @JsonProperty("displayName")
     String displayName;
-
     @JsonProperty("semanticVersion")
     String semanticVersion;
-
     @JsonProperty("artifactType")
     String artifactType;
-
     @JsonProperty("id")
     String idLowercase;
+    @JsonProperty("uniqueId")
+    private String uniqueId;
 }

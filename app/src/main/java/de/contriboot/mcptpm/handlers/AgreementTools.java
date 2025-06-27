@@ -3,7 +3,6 @@ package de.contriboot.mcptpm.handlers;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.figaf.integration.common.factory.HttpClientsFactory;
-import com.figaf.integration.tpm.client.agreement.AgreementClient;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
 import de.contriboot.mcptpm.api.clients.AgreementClientExtended;
 import de.contriboot.mcptpm.api.clients.B2BScenarioClientExtended;
@@ -25,12 +24,27 @@ import java.util.List;
 @Service
 public class AgreementTools {
 
-    private AgreementClientExtended client;
-    private B2BScenarioClientExtended clientb2b;
+    private final AgreementClientExtended client;
+    private final B2BScenarioClientExtended clientb2b;
 
     public AgreementTools() {
         this.client = new AgreementClientExtended(new HttpClientsFactory());
         this.clientb2b = new B2BScenarioClientExtended(new HttpClientsFactory());
+    }
+
+    public static MethodToolCallback getUpdateB2BScenarioTool() throws JsonMappingException {
+        // Find the method that now accepts a String argument
+        Method method = ReflectionUtils.findMethod(AgreementTools.class, "updateB2BScenario", B2BScenarioEntity.class);
+
+        return MethodToolCallback.builder()
+                .toolDefinition(ToolDefinition.builder()
+                        .name("update-b2b-scenario")
+                        .description("Update Agreements B2B Scenario")
+                        .inputSchema(ToolUtils.getJsonSchema(B2BScenarioEntity.class, "b2bScenarioEntity"))
+                        .build())
+                .toolMethod(method)
+                .toolObject(new AgreementTools())
+                .build();
     }
 
     @Tool(name = "get-all-agreement-metadata", description = "Get metadata for all agreements.")
@@ -48,26 +62,10 @@ public class AgreementTools {
         return ToolUtils.parseJson(clientb2b.getB2BScenariosForAgreementRaw(Config.getRequestContextFromEnv(), selectedAgreement));
     }
 
-
     public String updateB2BScenario(B2BScenarioEntity b2bScenarioEntity) {
 
         clientb2b.updateB2BScenario(Config.getRequestContextFromEnv(), b2bScenarioEntity);
         return "success";
-    }
-
-    public static MethodToolCallback getUpdateB2BScenarioTool() throws JsonMappingException {
-        // Find the method that now accepts a String argument
-        Method method = ReflectionUtils.findMethod(AgreementTools.class, "updateB2BScenario", B2BScenarioEntity.class);
-
-        return MethodToolCallback.builder()
-                .toolDefinition(ToolDefinition.builder()
-                        .name("update-b2b-scenario")
-                        .description("Update Agreements B2B Scenario")
-                        .inputSchema(ToolUtils.getJsonSchema(B2BScenarioEntity.class, "b2bScenarioEntity"))
-                        .build())
-                .toolMethod(method)
-                .toolObject(new AgreementTools())
-                .build();
     }
 
     @Tool(name = "create-agreement-with-bound-template", description = "Create a new b2b agreement which is bound to a template. Recommended over copy-template")

@@ -1,34 +1,29 @@
 package de.contriboot.mcptpm.handlers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.figaf.integration.common.factory.HttpClientsFactory;
+import com.figaf.integration.tpm.entity.TpmObjectMetadata;
+import com.figaf.integration.tpm.entity.mig.DraftCreationResponse;
 import de.contriboot.mcptpm.api.clients.MigClientExtended;
 import de.contriboot.mcptpm.api.entities.mapper.MIGProposalResponseMapper;
+import de.contriboot.mcptpm.api.entities.mig.CreateMIGRequest;
+import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import de.contriboot.mcptpm.api.entities.mig.MIGProposalResponse;
-import de.contriboot.mcptpm.utils.JsonUtils;
+import de.contriboot.mcptpm.utils.Config;
 import de.contriboot.mcptpm.utils.ToolUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 
-import com.figaf.integration.common.factory.HttpClientsFactory;
-import com.figaf.integration.tpm.client.mig.MessageImplementationGuidelinesClient;
-import com.figaf.integration.tpm.entity.TpmObjectMetadata;
-import com.figaf.integration.tpm.entity.mig.DraftCreationResponse;
-
-import de.contriboot.mcptpm.api.entities.mig.CreateMIGRequest;
-import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
-import de.contriboot.mcptpm.utils.Config;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
 public class MessageImplementationGuidelinesTools {
 
-    private MigClientExtended client;
+    private final MigClientExtended client;
 
     public MessageImplementationGuidelinesTools() {
         this.client = new MigClientExtended(new HttpClientsFactory());
@@ -60,12 +55,12 @@ public class MessageImplementationGuidelinesTools {
         return client.createDraftWithAllSegmentsAndFieldsSelected(Config.getRequestContextFromEnv(), name, sourceMigVersionId);
     }
 
-    @Tool(name = "get-mig-nodes-xpath", description="Get the Nodes of a MIG for a specified XPath. Null if no node matches")
+    @Tool(name = "get-mig-nodes-xpath", description = "Get the Nodes of a MIG for a specified XPath. Null if no node matches")
     public MIGEntity.Node getMigNodesXpath(
-        String migVersionId,
-        @ToolParam(description = "XPath of the message. Returns root element if empty", required = false) String xpath) {
-            MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migVersionId);
-            return entity.getNodeByXPath(xpath);
+            String migVersionId,
+            @ToolParam(description = "XPath of the message. Returns root element if empty", required = false) String xpath) {
+        MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migVersionId);
+        return entity.getNodeByXPath(xpath);
     }
 
     @Tool(name = "get-mig-documentation-entry", description = "Get the documentation text for a id of a documentation within a mig")
@@ -87,40 +82,40 @@ public class MessageImplementationGuidelinesTools {
             "If souccessful it will return two IDs a migguid and a field called just id. You probably want to use the " +
             "id field since it corresponds to the migguidversion which is used by most tools")
     public JsonNode createMig(
-        String name,
-        String summary,
-        String messageTemplateId,
-        String messageTemplateTag,
-        String typeSystemAcronym,
-        String typeSystemId,
-        @ToolParam(description = "Message version ID. Please fetch from get-type-system-message-full for a list. " +
-                "If not further specified the user probably wants the latest version")
-        String versionId,
-        String messageTemplateName,
-        @ToolParam(description="In, Out, Both") String direction, // In, Out, Both
-        @ToolParam(description="Has to be at least 1. " +
-                "Can be Business process, business process role, industry classification, product classification or geopolitical region" +
-                "Please check the corresponding tools. " +
-                "Try to specify as good as possible to get best MIG proposal results")
-        ArrayList<CreateMIGRequest.OwnBusinessContext> ownBusinessContext,
+            String name,
+            String summary,
+            String messageTemplateId,
+            String messageTemplateTag,
+            String typeSystemAcronym,
+            String typeSystemId,
+            @ToolParam(description = "Message version ID. Please fetch from get-type-system-message-full for a list. " +
+                    "If not further specified the user probably wants the latest version")
+            String versionId,
+            String messageTemplateName,
+            @ToolParam(description = "In, Out, Both") String direction, // In, Out, Both
+            @ToolParam(description = "Has to be at least 1. " +
+                    "Can be Business process, business process role, industry classification, product classification or geopolitical region" +
+                    "Please check the corresponding tools. " +
+                    "Try to specify as good as possible to get best MIG proposal results")
+            ArrayList<CreateMIGRequest.OwnBusinessContext> ownBusinessContext,
 
-        @ToolParam(description="Can be empty array" +
-                "Can be Business process, business process role, industry classification, product classification or geopolitical region" +
-                "Please check the corresponding tools. " +
-                "Try to specify as good as possible to get best MIG proposal results")
-        ArrayList<CreateMIGRequest.OwnBusinessContext> partnerBusinessContext
+            @ToolParam(description = "Can be empty array" +
+                    "Can be Business process, business process role, industry classification, product classification or geopolitical region" +
+                    "Please check the corresponding tools. " +
+                    "Try to specify as good as possible to get best MIG proposal results")
+            ArrayList<CreateMIGRequest.OwnBusinessContext> partnerBusinessContext
     ) {
         CreateMIGRequest migRequest = client.buildMIGCreateRequest(
-            name, 
-            summary, 
-            messageTemplateId, 
-            messageTemplateTag, 
-            typeSystemAcronym, 
-            typeSystemId, 
-            versionId, 
-            messageTemplateName, 
-            direction, 
-            ownBusinessContext
+                name,
+                summary,
+                messageTemplateId,
+                messageTemplateTag,
+                typeSystemAcronym,
+                typeSystemId,
+                versionId,
+                messageTemplateName,
+                direction,
+                ownBusinessContext
         );
 
         if (ownBusinessContext.isEmpty()) {
@@ -165,5 +160,5 @@ public class MessageImplementationGuidelinesTools {
         entity.applyMIGProposalRequest(proposalResponse, (float) confidenceValue / 100);
         return client.updateMIG(Config.getRequestContextFromEnv(), migVersionId, entity);
     }
-    
+
 }

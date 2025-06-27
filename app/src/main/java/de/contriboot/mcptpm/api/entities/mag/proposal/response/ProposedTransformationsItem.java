@@ -2,14 +2,14 @@ package de.contriboot.mcptpm.api.entities.mag.proposal.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ProposedTransformationsItem{
+public class ProposedTransformationsItem {
 
-	@JsonProperty("Transformation")
-	private Transformation transformation;
+    @JsonProperty("Transformation")
+    private Transformation transformation;
 
-	@JsonProperty("Confidence")
-	private Object confidence;
+    @JsonProperty("Confidence")
+    private Object confidence;
 
-	@JsonProperty("XslFunctionSnippetValidationResult")
-	private XslFunctionSnippetValidationResult xslFunctionSnippetValidationResult;
+    @JsonProperty("XslFunctionSnippetValidationResult")
+    private XslFunctionSnippetValidationResult xslFunctionSnippetValidationResult;
 }

@@ -116,7 +116,7 @@ public class AgreementClientExtended extends AgreementClient {
                     .findFirst()
                     .orElseThrow();
         } catch (NoSuchElementException e) {
-            throw new IllegalArgumentException("No partner system matches the specified alias in the template: " + partnerSystemAlias + "");
+            throw new IllegalArgumentException("No partner system matches the specified alias in the template: " + partnerSystemAlias);
         }
 
 
@@ -144,6 +144,7 @@ public class AgreementClientExtended extends AgreementClient {
     /**
      * Activate or update an Agreement
      * Usually also means deploy in TPM context
+     *
      * @param requestContext
      * @param artifactId
      * @param transactionIds If it is an update, and you want to deploy The B2B Scenario transaction. Include their IDs here
@@ -167,7 +168,6 @@ public class AgreementClientExtended extends AgreementClient {
         requestPayload.setTaskInput(taskInput);
 
         requestPayload.setTaskParameters(new CreateDeployRequest.TaskParameters(transactionIds));
-
 
 
         requestPayload.setTaskInput(taskInput);

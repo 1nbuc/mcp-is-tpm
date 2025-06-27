@@ -1,7 +1,6 @@
 package de.contriboot.mcptpm.api.entities.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.contriboot.mcptpm.api.entities.AgreementTemplateEntity;
 import de.contriboot.mcptpm.api.entities.mig.MIGProposalResponse;
 import lombok.extern.slf4j.Slf4j;
 
