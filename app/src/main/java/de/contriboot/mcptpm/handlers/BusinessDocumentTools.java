@@ -41,7 +41,7 @@ public class BusinessDocumentTools {
         }
     }
 
-    @Tool(name = "search-interchanges", description = "Search for interchanges based on filter criteria.")
+    @Tool(name = "search-interchanges", description = "Search for interchanges/TPM message monitoring based on filter criteria.")
     public List<Interchange> searchInterchanges(
             @ToolParam(description = "Left bound date for search (ISO 8601 format, e.g., YYYY-MM-DDTHH:mm:ss.sssZ)") String leftBoundDateStr,
             @ToolParam(description = "Right bound date for search (ISO 8601 format, e.g., YYYY-MM-DDTHH:mm:ss.sssZ)", required = false) String rightBoundDateStr,
@@ -88,14 +88,14 @@ public class BusinessDocumentTools {
 
     @Tool(name = "get-interchange-payloads", description = "Get payload data list for a specific interchange.")
     public List<InterchangePayloadData> getInterchangePayloads(
-            @ToolParam(description = "ID of the interchange") String interchangeId
+            @ToolParam(description = "ID of the message") String interchangeId
     ) {
         return client.getBusinessDocumentPayloadDataListByInterchangeId(Config.getRequestContextFromEnv(), interchangeId);
     }
 
-    @Tool(name = "get-interchange-last-error", description = "Get last error details for a specific interchange.")
+    @Tool(name = "get-interchange-last-error", description = "Get last error details for a specific message/business document.")
     public ErrorDetails getInterchangeLastError(
-            @ToolParam(description = "ID of the interchange") String interchangeId
+            @ToolParam(description = "ID Message/document") String interchangeId
     ) {
         return client.getLastErrorDetailsByInterchangeId(Config.getRequestContextFromEnv(), interchangeId);
     }

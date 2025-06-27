@@ -1,6 +1,7 @@
 package de.contriboot.mcptpm.handlers;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import com.figaf.integration.tpm.client.agreement.AgreementClient;
 import com.figaf.integration.tpm.entity.TpmObjectMetadata;
@@ -38,13 +39,13 @@ public class AgreementTools {
     }
 
     @Tool(name = "get-agreement-b2b-scenario", description = "Get the technical b2b scenario of an agreement")
-    public String getB2BScenario(String agreementId) {
+    public JsonNode getB2BScenario(String agreementId) {
         List<TpmObjectMetadata> agreementList = client.getAllMetadata(Config.getRequestContextFromEnv());
         TpmObjectMetadata selectedAgreement = agreementList.stream()
                 .filter(agreement -> agreement.getObjectId().equals(agreementId))
                 .findFirst().orElseThrow();
 
-        return clientb2b.getB2BScenariosForAgreementRaw(Config.getRequestContextFromEnv(), selectedAgreement);
+        return ToolUtils.parseJson(clientb2b.getB2BScenariosForAgreementRaw(Config.getRequestContextFromEnv(), selectedAgreement));
     }
 
 

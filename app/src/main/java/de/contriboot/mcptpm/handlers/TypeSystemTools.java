@@ -105,4 +105,9 @@ public class TypeSystemTools {
 
         throw new IllegalStateException("No message found with GUID: " + messageVertexGUID);
     }
+
+    @Tool(name = "get-qualifiers-codelist", description = "Get codelist of a qualifier")
+    public JsonNode getQualifierCodelist(String typesystem, String version, String qualifier) {
+        return client.getCodelistValues(Config.getRequestContextFromEnv(), typesystem, version, qualifier);
+    }
 }

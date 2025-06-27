@@ -9,7 +9,6 @@ import de.contriboot.mcptpm.utils.JsonUtils;
 import lombok.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -374,13 +373,13 @@ public class MIGEntity {
         }
     }
 
-    private void getAllSelectedNodesAsListRecursive(Node node, List<Node> resultList) {
-        if (node.isSelected()) {
+    private void getAllNodesAsListRecursive(Node node, List<Node> resultList, boolean selectedOnly) {
+        if (node.isSelected() || (!selectedOnly)) {
             resultList.add(node);
         }
 
         for (Node subNode : node.getNodes()) {
-            getAllSelectedNodesAsListRecursive(subNode, resultList);
+            getAllNodesAsListRecursive(subNode, resultList, selectedOnly);
         }
     }
 
@@ -392,7 +391,21 @@ public class MIGEntity {
     private List<Node> getAllSelectedNodesAsList() {
         List<Node> result = new ArrayList<>();
         for (Node node : this.getNodes()) {
-            getAllSelectedNodesAsListRecursive(node, new ArrayList<>());
+            getAllNodesAsListRecursive(node, new ArrayList<>(), true);
+        }
+
+        return result;
+    }
+
+    /**
+     * Function to easier iterate over all Nodes
+     *
+     * @return List of all Nodes but keeping references
+     */
+    private List<Node> getAllNodesAsList() {
+        List<Node> result = new ArrayList<>();
+        for (Node node : this.getNodes()) {
+            getAllNodesAsListRecursive(node, result, false);
         }
 
         return result;
@@ -405,6 +418,16 @@ public class MIGEntity {
         }
 
         return result;
+    }
+
+    public Node getNodeByXPath(String xPath) {
+        for (Node currNote : this.getAllNodesAsList()) {
+            if (currNote.getDomain().getXPath().equals(xPath)) {
+                return currNote;
+            }
+        }
+
+        return null;
     }
 
     // TODO: maybe find a better solution to not call a client within an entity class

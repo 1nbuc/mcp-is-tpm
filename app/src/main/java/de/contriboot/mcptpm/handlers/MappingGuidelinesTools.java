@@ -60,6 +60,11 @@ public class MappingGuidelinesTools {
         return client.simulatePayloadAgainstMAG(Config.getRequestContextFromEnv(), magVersionId, payload);
     }
 
+    @Tool(name = "get-all-mags-metadata", description = "Get an overview of available Mapping guidelines")
+    public JsonNode getAllMagsMetadata() {
+        return ToolUtils.parseJson(client.getMAGMetadata(Config.getRequestContextFromEnv()));
+    };
+
     // Not implemented for now. Maybe in the future. the application is way too complex and can be done with two clicks in browser
 //    @Tool(name = "apply-mag-proposal", description = "Apply fieldmapping based on MAG proposal. E.g. Map all fields " +
 //            "like the proposal says with a confidence score over 50%")

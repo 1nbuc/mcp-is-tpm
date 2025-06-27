@@ -60,28 +60,18 @@ public class MessageImplementationGuidelinesTools {
         return client.createDraftWithAllSegmentsAndFieldsSelected(Config.getRequestContextFromEnv(), name, sourceMigVersionId);
     }
 
-    @Tool(name = "get-mig-nodes-xpath", description="Get the Nodes of a MIG for a specified XPath")
+    @Tool(name = "get-mig-nodes-xpath", description="Get the Nodes of a MIG for a specified XPath. Null if no node matches")
     public MIGEntity.Node getMigNodesXpath(
         String migVersionId,
         @ToolParam(description = "XPath of the message. Returns root element if empty", required = false) String xpath) {
-            return new MIGEntity.Node();
+            MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migVersionId);
+            return entity.getNodeByXPath(xpath);
     }
 
-    @Tool(name = "get-documentations-for-notes", description = "Return the documentation of an element")
-    public Map<String, MIGEntity.Documentation> getNodesDocumentation(
-        String migVersionId,
-        @ToolParam(description="List of GUIDs of the nodes you want documentation for") List<String> nodeGuidList,
-        @ToolParam(description = "Weather to include Sub-Nodes or not. Default: false", required = false) boolean includeSubNodes) {
-
+    @Tool(name = "get-mig-documentation-entry", description = "Get the documentation text for a id of a documentation within a mig")
+    public String getMigDocumentationEntry(String migVersionId, String documentationId) {
         MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migVersionId);
-
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    //TODO: be aware of local codelists
-    @Tool(name = "get-qualifiers-codelist", description = "Get codelist of a qualifier")
-    public List<String> getQualifierCodelist(String typesystem, String version, String qualifier) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return entity.getDocumentationById(documentationId);
     }
 
     @Tool(name = "get-all-mig-fields", description = "Get a List of all fields of MIG")

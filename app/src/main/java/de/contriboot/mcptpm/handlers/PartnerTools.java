@@ -1,6 +1,7 @@
 package de.contriboot.mcptpm.handlers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import com.figaf.integration.tpm.client.trading.TradingPartnerClient;
@@ -11,6 +12,7 @@ import com.figaf.integration.tpm.entity.trading.*;
 import de.contriboot.mcptpm.api.clients.TradingPartnerClientExtended;
 import de.contriboot.mcptpm.api.entities.PartnerSystemEntity;
 import de.contriboot.mcptpm.utils.Config;
+import de.contriboot.mcptpm.utils.ToolUtils;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
@@ -190,6 +192,11 @@ public class PartnerTools  {
 
         client.createSignatureVerificationConfigurationsRequest(partnerId, request, Config.getRequestContextFromEnv());
         return "success";
+    }
+
+    @Tool(name = "activate-signature-verify-config")
+    public JsonNode activateSignatureVerifyConfig(String partnerId, String as2partnerId) {
+        return ToolUtils.parseJson(client.activateSignatureVerifyConfig(Config.getRequestContextFromEnv(), partnerId, as2partnerId));
     }
 
     @Tool(name = "create-trading-partner", description = "Create a new trading partner")

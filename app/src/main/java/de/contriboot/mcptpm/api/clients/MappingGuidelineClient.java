@@ -169,6 +169,10 @@ public class MappingGuidelineClient extends TpmBaseClient {
         return response.getTargetPayload();
     }
 
+    public String getMAGMetadata(RequestContext requestContext) {
+        return executeGet(requestContext, MAPPING_GUIDELINE_RESOURCE, (response) -> response);
+    }
+
     private String generateGUID() {
         UUID uuid = UUID.randomUUID();
         // Format it with the "UID-" prefix

@@ -202,6 +202,17 @@ public class TypeSystemClient extends TpmBaseClient {
         return executeGet(requestContext, BUSINESS_PROCESS_ROLE_RESOURCE, (response) -> response );
     }
 
+    public JsonNode getCodelistValues(RequestContext requestContext, String typeSystem, String version, String codeListId) {
+        String uri = format(CODE_VALUE_FORMAT, typeSystem, version, codeListId).replace(" ", "%20");
+
+            return executeGet(
+                    requestContext,
+                    uri.toString(),
+                    (response) -> ToolUtils.parseJson(response)
+            );
+
+    }
+
     public List<String> getCodeValueVertexIds(
             RequestContext requestContext,
             String typeSystem,
