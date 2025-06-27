@@ -4,11 +4,11 @@ import com.figaf.integration.common.entity.RequestContext;
 import com.figaf.integration.common.exception.ClientIntegrationException;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import com.figaf.integration.tpm.client.TpmBaseClient;
-import de.contriboot.mcptpm.api.entities.mag.MAGCreateEntity;
-import de.contriboot.mcptpm.api.entities.mag.MAGEntity;
-import de.contriboot.mcptpm.api.entities.mag.MAGProposalRequest;
+import de.contriboot.mcptpm.api.entities.mag.*;
 import de.contriboot.mcptpm.api.entities.mapper.MAGResponseMapper;
+import de.contriboot.mcptpm.api.entities.mapper.MAGSimulationResponseMapper;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
+import org.apache.hc.core5.annotation.Experimental;
 import org.springframework.http.*;
 
 import java.util.*;
@@ -20,14 +20,11 @@ public class MappingGuidelineClient extends TpmBaseClient {
     private static final String MAPPING_GUIDELINE_RESOURCE = "/api/1.0/mags";
     private static final String MAPPING_GUIDELINE_BY_ID_RESOURCE = "/api/1.0/mags/%s";
     private static final String MAPPING_GUIDELINE_PROPOSAL_RESOURCE = "/api/1.0/magproposal";
+    private static final String MAPPING_GUIDELINE_SIMULATION_RESOURCE = "/api/1.0/magsimulation";
 
 
     public MappingGuidelineClient(HttpClientsFactory httpClientsFactory) {
         super(httpClientsFactory);
-    }
-
-    public String createMappingGuideline(RequestContext requestContext, String sourceMig, String targetMig, String name) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     public String updateMappingGuideline() {
@@ -121,6 +118,7 @@ public class MappingGuidelineClient extends TpmBaseClient {
 
     }
 
+    @Experimental
     public String getMAGProposal(RequestContext requestContext, MAGProposalRequest requestData) {
         return executeMethod(requestContext, PATH_FOR_TOKEN, MAPPING_GUIDELINE_PROPOSAL_RESOURCE,
 
@@ -139,6 +137,36 @@ public class MappingGuidelineClient extends TpmBaseClient {
 
                     return responseEntity.getBody();
                 });
+    }
+
+    public String simulatePayloadAgainstMAG(RequestContext requestContext, String magVersionId, String payload) {
+        MAGEntity currentEntity = getMappingGuidelineRawObject(requestContext, magVersionId);
+
+        MAGSimulationRequest magSimReq = new MAGSimulationRequest();
+        magSimReq.setMag(currentEntity);
+        magSimReq.setPayload(payload);
+
+        MAGSimulationResponse response = executeMethod(
+                requestContext,
+                PATH_FOR_TOKEN,
+                MAPPING_GUIDELINE_SIMULATION_RESOURCE,
+                (url, token, restTemplateWrapper) -> {
+                    HttpHeaders httpHeaders = createHttpHeadersWithCSRFToken(token);
+                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    HttpEntity<MAGSimulationRequest> requestEntity = new HttpEntity<>(magSimReq, httpHeaders);
+                    ResponseEntity<String> responseEntity = restTemplateWrapper.getRestTemplate().exchange(url,
+                            HttpMethod.POST, requestEntity, String.class);
+                    if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+                        throw new ClientIntegrationException(format(
+                                "Couldn't create MAG. Code: %d, Message: %s",
+                                responseEntity.getStatusCode().value(),
+                                requestEntity.getBody()));
+                    }
+
+                    return MAGSimulationResponseMapper.fromJsonString(responseEntity.getBody());
+                });
+
+        return response.getTargetPayload();
     }
 
     private String generateGUID() {

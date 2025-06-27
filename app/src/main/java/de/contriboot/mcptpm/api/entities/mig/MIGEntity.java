@@ -1,24 +1,22 @@
 package de.contriboot.mcptpm.api.entities.mig;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.figaf.integration.common.factory.HttpClientsFactory;
+import de.contriboot.mcptpm.api.clients.TypeSystemClient;
+import de.contriboot.mcptpm.api.entities.mag.MAGProposalRequest;
+import de.contriboot.mcptpm.utils.Config;
+import de.contriboot.mcptpm.utils.JsonUtils;
+import lombok.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import de.contriboot.mcptpm.utils.JsonUtils;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
 @Getter
 @Setter
 @ToString
-@NoArgsConstructor 
+@NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
 @AllArgsConstructor
 public class MIGEntity {
@@ -100,6 +98,348 @@ public class MIGEntity {
 
     @JsonProperty("NamespaceHashes")
     private Map<String, Object> namespaceHashes;
+    @JsonProperty("LocalCodelists")
+    private Map<String, Codelist> localCodelists;
+
+    /**
+     * Get a 2D List of all Node elements in minimal form
+     *
+     * @param selectedOnly Weather all or only selected elements should get returned
+     * @return the list of MinimalNode's
+     */
+    public List<MIGEntity.MinimalNode> getMinimalNodeList(boolean selectedOnly) {
+        List<MIGEntity.MinimalNode> resultList = new ArrayList<>();
+
+        for (MIGEntity.Node node : this.getNodes()) {
+            if (selectedOnly && !node.isSelected()) {
+                continue;
+            }
+
+            resultList.addAll(buildMinimalNodeListRecursive(node, resultList, selectedOnly));
+        }
+
+        return resultList;
+    }
+
+    public String getDocumentationById(String documentationId) {
+        return this.getDocumentationArtifacts().get(documentationId);
+    }
+
+    public List<MAGProposalRequest.DomainGuid> getDomainGuidsWithCodeValues() {
+        List<MAGProposalRequest.DomainGuid> resultList = new ArrayList<>();
+        for (Node currNode : this.getAllSelectedNodesAsList()) {
+            String domainGuid = currNode.getDomain().getDomainGUID();
+            resultList.add(new MAGProposalRequest.DomainGuid(domainGuid));
+
+            for (String codeValueGuid : getCodeValueGuidsForNode(currNode)) {
+                resultList.add(new MAGProposalRequest.DomainGuid(domainGuid, codeValueGuid));
+            }
+        }
+
+        return resultList;
+
+    }
+
+    public List<MIGEntity.MinimalNode> buildMinimalNodeListRecursive(MIGEntity.Node node, List<MIGEntity.MinimalNode> resultList, boolean selectedOnly) {
+        if (resultList == null) {
+            resultList = new ArrayList<>();
+        }
+
+        MIGEntity.MinimalNode nodeObj = new MIGEntity.MinimalNode();
+        nodeObj.setVertexGuid(node.getVertexGUID());
+        nodeObj.setSelected(node.isSelected());
+        nodeObj.setXPath(node.getDomain().getXPath());
+
+        nodeObj.setHasChildren(!node.getNodes().isEmpty());
+
+
+        nodeObj.setMinOccur(Integer.parseInt(node.getProperties().get("MinOccurs").getBaseArtifactValue().getId()));
+
+
+        nodeObj.setMinOccur(Integer.parseInt(node.getProperties().get("MaxOccurs").getBaseArtifactValue().getId()));
+
+        List<MIGEntity.CodelistReference> codelistReferences = new ArrayList<>();
+        if (node.getCodelistRefrence() != null) codelistReferences.add(node.getCodelistRefrence());
+
+        if (node.getSelectedCodelist() != null)
+            codelistReferences.add(node.getSelectedCodelist().getCodelistReference());
+
+
+        nodeObj.setCodelistRefrence(codelistReferences);
+
+        resultList.add(nodeObj);
+
+        String documentationId = JsonUtils.safeGet(() -> node.getDocumentation().getName().getBaseArtifactValue().getId());
+        nodeObj.setDocumentation(getDocumentationById(documentationId));
+
+        if (node.getSimpleTypeVertexGUID() != null) {
+            nodeObj.setSimpleType(getSimpleType(node.getSimpleTypeVertexGUID()));
+        }
+
+
+        for (MIGEntity.Node subNode : node.getNodes()) {
+            if (selectedOnly && !subNode.isSelected()) {
+                continue;
+            }
+            try {
+                buildMinimalNodeListRecursive(subNode, resultList, selectedOnly);
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Error while building minimal node list: " + e.getMessage());
+            }
+        }
+
+
+        return resultList;
+    }
+
+    public Node getNodeByVertexGuidRecursive(String vertexGuid, Node currentNode) {
+        if (currentNode.getVertexGUID().equals(vertexGuid)) {
+            return currentNode;
+        }
+
+        for (MIGEntity.Node node : currentNode.getNodes()) {
+            Node resultNode = getNodeByVertexGuidRecursive(vertexGuid, node);
+            if (resultNode != null) {
+                return resultNode;
+            }
+        }
+
+        return null;
+    }
+
+    public Node getNodeByVertexGuid(String vertexGuid) {
+        for (MIGEntity.Node node : this.getNodes()) {
+            MIGEntity.Node foundNode = getNodeByVertexGuidRecursive(vertexGuid, node);
+            if (foundNode != null) {
+                return foundNode;
+            }
+        }
+
+        throw new RuntimeException("Could not find node with vertex guid " + vertexGuid);
+    }
+
+    public MIGEntity.MinimalNode.SimpleType getSimpleType(String simpleTypeVertexGuid) {
+        MIGEntity.MinimalNode.SimpleType minimalSimpleType = new MIGEntity.MinimalNode.SimpleType();
+
+        MIGEntity.SimpleTypeDetail simpleType = this.getSimpleTypes().get(simpleTypeVertexGuid);
+
+        minimalSimpleType.setId(simpleType.getId());
+
+        String primitiveType = JsonUtils.safeGet(() -> simpleType.getFacetProperties().get("PrimitiveType").getBaseArtifactValue().getId());
+
+        String maxLengthStr = JsonUtils.safeGet(() -> simpleType.getFacetProperties().get("MaxLength").getBaseArtifactValue().getId());
+
+
+        String syntaxType = JsonUtils.safeGet(() -> simpleType.getProperties().get("SyntaxDataType").getBaseArtifactValue().getId());
+
+        minimalSimpleType.setPrimitiveType(primitiveType);
+        if (maxLengthStr != null) minimalSimpleType.setLength(Integer.parseInt(maxLengthStr));
+        minimalSimpleType.setSyntaxType(syntaxType);
+
+        return minimalSimpleType;
+
+    }
+
+    public void findAndChangeNodeSelection(String nodeVertexGUID, boolean selected) {
+        for (MIGEntity.Node rootNode : this.getNodes()) {
+            findAndChangeNodeSelectionRecursive(nodeVertexGUID, selected, rootNode);
+        }
+    }
+
+    private boolean findAndChangeNodeSelectionRecursive(String nodeVertexGUID, boolean selected, MIGEntity.Node rootNode) {
+        if (rootNode == null) {
+            return false;
+        }
+
+        if (rootNode.getVertexGUID().equals(nodeVertexGUID)) {
+            rootNode.setSelected(selected);
+            return true;
+        }
+
+        for (MIGEntity.Node subNode : rootNode.getNodes()) {
+            if (findAndChangeNodeSelectionRecursive(nodeVertexGUID, selected, subNode)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public MIGProposalRequest getMIGProposalRequest() {
+        MIGProposalRequest request = new MIGProposalRequest();
+
+        request.setDirection(this.getDirection());
+        request.setBusinessContext(new ArrayList<>(this.getBusinessContext()));
+        request.setPartnerBusinessContext(new ArrayList<>(this.getPartnerBusinessContext()));
+        request.setRootNodeDomainGuid(this.getMessageRootDomainGuid());
+        request.setMessageRootNodeParentXPath(this.getMessageRootNodeParentXPath());
+
+
+        request.setIdentification(this.getIdentification());
+
+
+        request.setMessageTemplate(this.getMessageTemplate());
+
+        return request;
+    }
+
+    public void applyMIGProposalRequest(MIGProposalResponse proposal, float confidenceThreshold) {
+        for (MIGProposalResponse.MigProposal proposalEntity : proposal.getMigProposal()) {
+            findAndChangeNodeSelection(proposalEntity.getVertexGUID(), proposalEntity.getConfidenceValue() > confidenceThreshold);
+        }
+    }
+
+    /**
+     * Creates a CodelistReferenceDetail for a given node by checking for a
+     * codelist in a specific order:
+     * 1. Direct reference on the node.
+     * 2. Reference via the node's SimpleType.
+     * 3. Reference via the node's Qualifier.
+     *
+     * @param node The node to analyze.
+     * @return A populated CodelistReferenceDetail object.
+     */
+    private CodelistReferenceDetail createCodelistDetailForNode(MIGEntity.Node node) {
+        CodelistReferenceDetail detail = new CodelistReferenceDetail();
+
+        // Case 1: The node has a direct, selected codelist reference.
+        if (node.getSelectedCodelist() != null) {
+            populateFromDirectReference(detail, node);
+            return detail;
+        }
+
+        // Case 2: The node has a SimpleType that might contain a codelist reference.
+        if (node.getSimpleTypeVertexGUID() != null) {
+            populateFromSimpleType(detail, node);
+            return detail;
+        }
+
+        // Case 3: The node has qualifiers that point to another node with a SimpleType.
+        if (!node.getQualifierMarkers().isEmpty()) {
+            populateFromQualifier(detail, node);
+            return detail;
+        }
+
+        // Default case: No codelist reference found.
+        detail.hasCodelistReference = false;
+        return detail;
+    }
+
+    /**
+     * Populates detail from the node's directly selected codelist.
+     */
+    private void populateFromDirectReference(CodelistReferenceDetail detail, MIGEntity.Node node) {
+        detail.hasCodelistReference = true;
+        detail.allValuesSelected = false; // Specific values are listed.
+        detail.codelistReferenceId = node.getSelectedCodelist().getCodelistReference().getId();
+
+        for (MIGEntity.SelectedCode selectedCode : node.getSelectedCodelist().getSelectedCodes()) {
+            detail.getSelectedValues().add(selectedCode.getId());
+        }
+    }
+
+    /**
+     * Populates detail from the codelist found in the node's SimpleType.
+     */
+    private void populateFromSimpleType(CodelistReferenceDetail detail, MIGEntity.Node node) {
+        SimpleTypeDetail simpleType = simpleTypes.get(node.getSimpleTypeVertexGUID());
+        if (simpleType != null && !simpleType.getCodelistReferences().isEmpty()) {
+            // Assuming only the first codelist reference is relevant
+            CodelistReference codeListRef = simpleType.getCodelistReferences().get(0);
+            detail.hasCodelistReference = true;
+            detail.codelistReferenceId = codeListRef.getId();
+            // TODO: The logic for 'allValuesSelected' from SimpleType is not implemented.
+            // The original code threw an exception here.
+            // Example: detail.allValuesSelected = isAllValuesSelected(codeListRef);
+        }
+    }
+
+    /**
+     * Populates detail from the codelist found via the node's qualifier.
+     */
+    private void populateFromQualifier(CodelistReferenceDetail detail, MIGEntity.Node node) {
+        // Assuming only the first qualifier marker is relevant
+        String qualifyingNodeVertexGUID = node.getQualifierMarkers().get(0).getQualifyingNodeVertexGUID();
+        Node qualifyingNode = getNodeByVertexGuid(qualifyingNodeVertexGUID);
+
+        if (qualifyingNode != null) {
+            SimpleTypeDetail simpleType = simpleTypes.get(qualifyingNode.getSimpleTypeVertexGUID());
+            if (simpleType != null && !simpleType.getCodelistReferences().isEmpty()) {
+                // Assuming only the first codelist reference is relevant
+                detail.hasCodelistReference = true;
+                detail.allValuesSelected = true;
+                detail.codelistReferenceId = simpleType.getCodelistReferences().get(0).getId();
+            }
+        }
+    }
+
+    private void getAllSelectedNodesAsListRecursive(Node node, List<Node> resultList) {
+        if (node.isSelected()) {
+            resultList.add(node);
+        }
+
+        for (Node subNode : node.getNodes()) {
+            getAllSelectedNodesAsListRecursive(subNode, resultList);
+        }
+    }
+
+    /**
+     * Function to easier iterate over all Nodes
+     *
+     * @return List of all Nodes but keeping references
+     */
+    private List<Node> getAllSelectedNodesAsList() {
+        List<Node> result = new ArrayList<>();
+        for (Node node : this.getNodes()) {
+            getAllSelectedNodesAsListRecursive(node, new ArrayList<>());
+        }
+
+        return result;
+    }
+
+    private List<String> getAllDomainGuids() {
+        List<String> result = new ArrayList<>();
+        for (Node node : this.getAllSelectedNodesAsList()) {
+            result.add(node.getDomain().getDomainGUID());
+        }
+
+        return result;
+    }
+
+    // TODO: maybe find a better solution to not call a client within an entity class
+    private List<String> getCodeValueGuidsOfCodelist(CodelistReferenceDetail codelistReferenceDetail) {
+        TypeSystemClient client = new TypeSystemClient(new HttpClientsFactory());
+        return client.getCodeValueVertexIds(Config.getRequestContextFromEnv(), getMessageTemplate().getTypeSystemId(), getMessageTemplate().getVersionId(), codelistReferenceDetail.getCodelistReferenceId(), codelistReferenceDetail.getSelectedValues(), codelistReferenceDetail.isAllValuesSelected());
+    }
+
+    private List<String> getCodeValueGuidsForNode(Node node) {
+        List<String> result = new ArrayList<>();
+        CodelistReferenceDetail detail = new CodelistReferenceDetail();
+        detail.hasCodelistReference = false;
+
+        // Case 1: The node has a direct, selected codelist reference.
+        if (node.getSelectedCodelist() != null) {
+            populateFromDirectReference(detail, node);
+        }
+
+        // Case 2: The node has a SimpleType that might contain a codelist reference.
+        if (node.getSimpleTypeVertexGUID() != null) {
+            populateFromSimpleType(detail, node);
+        }
+
+        // Case 3: The node has qualifiers that point to another node with a SimpleType.
+        if (!node.getQualifierMarkers().isEmpty()) {
+            populateFromQualifier(detail, node);
+        }
+
+        if (detail.hasCodelistReference) {
+            result = getCodeValueGuidsOfCodelist(detail);
+        }
+
+        return result;
+
+    }
 
     @Getter
     @Setter
@@ -139,7 +479,7 @@ public class MIGEntity {
 
     @Getter
     @Setter
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class CodelistIdentification {
@@ -169,7 +509,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class BusinessContext {
@@ -184,7 +524,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class ContextValue {
@@ -197,7 +537,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class MessageTemplate {
@@ -234,7 +574,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class Documentation {
@@ -253,7 +593,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class Name {
@@ -266,7 +606,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class Summary {
@@ -277,7 +617,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class Definition {
@@ -290,7 +630,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class BaseArtifactValue {
@@ -311,7 +651,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class ArtifactValue {
@@ -328,7 +668,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class RuntimeContext {
@@ -341,7 +681,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class PropertyDefinition {
@@ -354,7 +694,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class AdministrativeData {
@@ -373,7 +713,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class XmlNamespace {
@@ -494,7 +834,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class Domain {
@@ -531,11 +871,10 @@ public class MIGEntity {
         private Object properties; // Map, da "VersionMode", "IsSelected" etc. dynamische Schlüssel sind
     }
 
-
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class BaseTypeDomain {
@@ -548,7 +887,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class PropertyDetail {
@@ -567,7 +906,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class ComplexTypeDetail {
@@ -592,7 +931,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class SimpleTypeDetail {
@@ -623,7 +962,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class FacetProperties {
@@ -637,14 +976,10 @@ public class MIGEntity {
         private BaseArtifactValue dateTimeFormat;
     }
 
-    @JsonProperty("LocalCodelists")
-    private Map<String, Codelist> localCodelists;
-
-
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class Codelist {
@@ -680,7 +1015,7 @@ public class MIGEntity {
     @Getter
     @Setter
     @ToString
-    @NoArgsConstructor 
+    @NoArgsConstructor
 //@JsonIgnoreProperties(ignoreUnknown = true)
     @AllArgsConstructor
     public static class Code {
@@ -730,393 +1065,43 @@ public class MIGEntity {
 
         @JsonProperty("SimpleType")
         private MIGEntity.MinimalNode.SimpleType simpleType;
+        @JsonProperty("codelistRefrence")
+        private List<MIGEntity.CodelistReference> codelistRefrence = new ArrayList<>();
+
+        @JsonProperty("minOccur")
+        private int minOccur;
+        @JsonProperty("maxOccur")
+        private int maxOccur;
+        @JsonProperty("documentation")
+        private String documentation;
 
         @Getter
         @Setter
         @NoArgsConstructor
         @AllArgsConstructor
         public static class SimpleType {
+            @JsonProperty("CodelistReferences")
+            List<CodelistReference> codelistReferences;
             @JsonProperty("length")
             private int length;
-
             @JsonProperty("Id")
             private String id;
-
             @JsonProperty("primitiveType")
             private String primitiveType;
-
             @JsonProperty("syntaxType")
             private String syntaxType;
 
-            @JsonProperty("CodelistReferences")
-            List<CodelistReference> codelistReferences;
-
-        };
-
-
-        @JsonProperty("codelistRefrence")
-        private List<MIGEntity.CodelistReference> codelistRefrence = new ArrayList<>();
-
-        @JsonProperty("minOccur")
-        private int minOccur;
-
-        @JsonProperty("maxOccur")
-        private int maxOccur;
-
-        @JsonProperty("documentation")
-        private String documentation;
+        }
 
 
     }
-
-
-    /**
-     * Get a 2D List of all Node elements in minimal form
-     * @param selectedOnly Weather all or only selected elements should get returned
-     * @return the list of MinimalNode's
-     */
-    public List<MIGEntity.MinimalNode> getMinimalNodeList(boolean selectedOnly) {
-        List<MIGEntity.MinimalNode> resultList = new ArrayList<>();
-
-        for (MIGEntity.Node node : this.getNodes()) {
-            if (selectedOnly && !node.isSelected()) {
-                continue;
-            }
-
-            resultList.addAll(
-                    buildMinimalNodeListRecursive(node, resultList, selectedOnly)
-            );
-        }
-
-        return resultList;
-    }
-
-    public String getDocumentationById(String documentationId) {
-        return this.getDocumentationArtifacts().get(documentationId);
-    }
-
-    public List<MIGEntity.MinimalNode> buildMinimalNodeListRecursive(MIGEntity.Node node, List<MIGEntity.MinimalNode> resultList, boolean selectedOnly) {
-        if (resultList == null) {
-            resultList = new ArrayList<>();
-        }
-
-        MIGEntity.MinimalNode nodeObj = new MIGEntity.MinimalNode();
-        nodeObj.setVertexGuid(node.getVertexGUID());
-        nodeObj.setSelected(node.isSelected());
-        nodeObj.setXPath(node.getDomain().getXPath());
-
-        nodeObj.setHasChildren(!node.getNodes().isEmpty());
-
-
-        nodeObj.setMinOccur(
-                Integer.parseInt(
-                        node.getProperties()
-                                .get("MinOccurs")
-                                .getBaseArtifactValue()
-                                .getId()
-                ));
-
-
-
-        nodeObj.setMinOccur(
-                Integer.parseInt(
-                        node.getProperties()
-                                .get("MaxOccurs")
-                                .getBaseArtifactValue()
-                                .getId()
-                ));
-
-        List<MIGEntity.CodelistReference> codelistReferences = new ArrayList<>();
-        if (node.getCodelistRefrence() != null) codelistReferences.add(node.getCodelistRefrence());
-
-        if (node.getSelectedCodelist() != null) codelistReferences.add(node.getSelectedCodelist().getCodelistReference());
-
-
-        nodeObj.setCodelistRefrence(codelistReferences);
-
-        resultList.add(nodeObj);
-
-        String documentationId = JsonUtils.safeGet(() -> node.getDocumentation().getName().getBaseArtifactValue().getId());
-        nodeObj.setDocumentation(getDocumentationById(documentationId));
-
-        if (node.getSimpleTypeVertexGUID() != null) {
-            nodeObj.setSimpleType(getSimpleType(node.getSimpleTypeVertexGUID()));
-        }
-
-
-        for (MIGEntity.Node subNode : node.getNodes()) {
-            if (selectedOnly && !subNode.isSelected()) {
-                continue;
-            }
-            try {
-                buildMinimalNodeListRecursive(subNode, resultList, selectedOnly);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("Error while building minimal node list: " + e.getMessage());
-            }
-        }
-
-
-        return resultList;
-    }
-
-    public Node getNodeByVertexGuidRecursive(String vertexGuid, Node currentNode) {
-        if (currentNode.getVertexGUID().equals(vertexGuid)) {
-            return currentNode;
-        }
-
-        for (MIGEntity.Node node : currentNode.getNodes()) {
-           Node resultNode = getNodeByVertexGuidRecursive(vertexGuid, node);
-           if (resultNode != null) {
-               return resultNode;
-           }
-        }
-
-        return null;
-    }
-
-    public Node getNodeByVertexGuid(String vertexGuid) {
-        for (MIGEntity.Node node : this.getNodes()) {
-            MIGEntity.Node foundNode = getNodeByVertexGuidRecursive(vertexGuid, node);
-            if (foundNode != null) {
-                return foundNode;
-            }
-        }
-
-        throw new RuntimeException("Could not find node with vertex guid " + vertexGuid);
-    }
-
-    public MIGEntity.MinimalNode.SimpleType getSimpleType(String simpleTypeVertexGuid) {
-        MIGEntity.MinimalNode.SimpleType minimalSimpleType = new MIGEntity.MinimalNode.SimpleType();
-
-        MIGEntity.SimpleTypeDetail simpleType = this.getSimpleTypes().get(simpleTypeVertexGuid);
-
-        minimalSimpleType.setId(simpleType.getId());
-
-        String primitiveType = JsonUtils.safeGet(() -> simpleType.getFacetProperties().get("PrimitiveType").getBaseArtifactValue().getId());
-
-        String maxLengthStr = JsonUtils.safeGet(() -> simpleType.getFacetProperties().get("MaxLength").getBaseArtifactValue().getId());
-
-
-
-        String syntaxType = JsonUtils.safeGet(() -> simpleType.getProperties().get("SyntaxDataType").getBaseArtifactValue().getId());
-
-        minimalSimpleType.setPrimitiveType(primitiveType);
-        if (maxLengthStr != null) minimalSimpleType.setLength(Integer.parseInt(maxLengthStr));
-        minimalSimpleType.setSyntaxType(syntaxType);
-
-        return minimalSimpleType;
-
-    }
-
-    public void findAndChangeNodeSelection(String nodeVertexGUID, boolean selected) {
-        for (MIGEntity.Node rootNode : this.getNodes()) {
-            findAndChangeNodeSelectionRecursive(nodeVertexGUID, selected, rootNode);
-        }
-    }
-
-    private boolean findAndChangeNodeSelectionRecursive(String nodeVertexGUID, boolean selected, MIGEntity.Node rootNode) {
-        if (rootNode == null) {
-            return false;
-        }
-
-        if (rootNode.getVertexGUID().equals(nodeVertexGUID)) {
-            rootNode.setSelected(selected);
-            return true;
-        }
-
-        for (MIGEntity.Node subNode : rootNode.getNodes()) {
-            if (findAndChangeNodeSelectionRecursive(nodeVertexGUID, selected, subNode)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public MIGProposalRequest getMIGProposalRequest() {
-        MIGProposalRequest request = new MIGProposalRequest();
-
-        request.setDirection(this.getDirection());
-        request.setBusinessContext(new ArrayList<>(this.getBusinessContext()));
-        request.setPartnerBusinessContext(new ArrayList<>(this.getPartnerBusinessContext()));
-        request.setRootNodeDomainGuid(this.getMessageRootDomainGuid());
-        request.setMessageRootNodeParentXPath(this.getMessageRootNodeParentXPath());
-
-
-        request.setIdentification(this.getIdentification());
-
-
-        request.setMessageTemplate(this.getMessageTemplate());
-
-        return request;
-    }
-
-    public void applyMIGProposalRequest(MIGProposalResponse proposal, float confidenceThreshold) {
-        for(MIGProposalResponse.MigProposal proposalEntity : proposal.getMigProposal()) {
-            if (proposalEntity.getConfidenceValue() > confidenceThreshold) {
-                findAndChangeNodeSelection(proposalEntity.getVertexGUID(), true);
-            } else {
-                findAndChangeNodeSelection(proposalEntity.getVertexGUID(), false);
-            }
-        }
-    }
-
 
     @Getter
     @Setter
-   public static class CodelistReferenceDetail {
+    public static class CodelistReferenceDetail {
         private boolean hasCodelistReference;
         private String codelistReferenceId;
         private boolean allValuesSelected;
         private List<String> selectedValues = new ArrayList<>();
-    }
-
-    /**
-     * Recursively traverses the node tree to populate a map of domain GUIDs to
-     * their Codelist reference details.
-     *
-     * @param result       The map to populate with results.
-     * @param node         The current node in the tree to process.
-     * @param selectedOnly If true, only processes nodes that are marked as selected.
-     */
-    private void getAllDomainGuidsRecursive(
-            Map<String, CodelistReferenceDetail> result,
-            MIGEntity.Node node,
-            boolean selectedOnly
-    ) {
-        // Base case for recursion
-        if (node == null) {
-            return;
-        }
-
-        // Process the current node only if it meets the selection criteria
-        if (!selectedOnly || node.isSelected()) {
-            CodelistReferenceDetail detail = createCodelistDetailForNode(node);
-            result.put(node.getDomain().getDomainGUID(), detail);
-        }
-
-        // Recurse through all child nodes
-        for (MIGEntity.Node subNode : node.getNodes()) {
-            getAllDomainGuidsRecursive(result, subNode, selectedOnly);
-        }
-    }
-
-    /**
-     * Creates a CodelistReferenceDetail for a given node by checking for a
-     * codelist in a specific order:
-     * 1. Direct reference on the node.
-     * 2. Reference via the node's SimpleType.
-     * 3. Reference via the node's Qualifier.
-     *
-     * @param node The node to analyze.
-     * @return A populated CodelistReferenceDetail object.
-     */
-    private CodelistReferenceDetail createCodelistDetailForNode(
-            MIGEntity.Node node
-    ) {
-        CodelistReferenceDetail detail = new CodelistReferenceDetail();
-
-        // Case 1: The node has a direct, selected codelist reference.
-        if (node.getSelectedCodelist() != null) {
-            populateFromDirectReference(detail, node);
-            return detail;
-        }
-
-        // Case 2: The node has a SimpleType that might contain a codelist reference.
-        if (node.getSimpleTypeVertexGUID() != null) {
-            populateFromSimpleType(detail, node);
-            return detail;
-        }
-
-        // Case 3: The node has qualifiers that point to another node with a SimpleType.
-        if (!node.getQualifierMarkers().isEmpty()) {
-            populateFromQualifier(detail, node);
-            return detail;
-        }
-
-        // Default case: No codelist reference found.
-        detail.hasCodelistReference = false;
-        return detail;
-    }
-
-    /** Populates detail from the node's directly selected codelist. */
-    private void populateFromDirectReference(
-            CodelistReferenceDetail detail,
-            MIGEntity.Node node
-    ) {
-        detail.hasCodelistReference = true;
-        detail.allValuesSelected = false; // Specific values are listed.
-        detail.codelistReferenceId = node
-                .getSelectedCodelist()
-                .getCodelistReference()
-                .getId();
-
-        for (MIGEntity.SelectedCode selectedCode : node
-                .getSelectedCodelist()
-                .getSelectedCodes()) {
-            detail.getSelectedValues().add(selectedCode.getId());
-        }
-    }
-
-    /** Populates detail from the codelist found in the node's SimpleType. */
-    private void populateFromSimpleType(
-            CodelistReferenceDetail detail,
-            MIGEntity.Node node
-    ) {
-        SimpleTypeDetail simpleType = simpleTypes.get(node.getSimpleTypeVertexGUID());
-        if (simpleType != null && !simpleType.getCodelistReferences().isEmpty()) {
-            // Assuming only the first codelist reference is relevant
-            CodelistReference codeListRef = simpleType.getCodelistReferences().get(0);
-            detail.hasCodelistReference = true;
-            detail.codelistReferenceId = codeListRef.getId();
-            // TODO: The logic for 'allValuesSelected' from SimpleType is not implemented.
-            // The original code threw an exception here.
-            // Example: detail.allValuesSelected = isAllValuesSelected(codeListRef);
-        }
-    }
-
-    /** Populates detail from the codelist found via the node's qualifier. */
-    private void populateFromQualifier(
-            CodelistReferenceDetail detail,
-            MIGEntity.Node node
-    ) {
-        // Assuming only the first qualifier marker is relevant
-        String qualifyingNodeVertexGUID = node
-                .getQualifierMarkers()
-                .get(0)
-                .getQualifyingNodeVertexGUID();
-        Node qualifyingNode = getNodeByVertexGuid(qualifyingNodeVertexGUID);
-
-        if (qualifyingNode != null) {
-            SimpleTypeDetail simpleType = simpleTypes.get(
-                    qualifyingNode.getSimpleTypeVertexGUID()
-            );
-            if (simpleType != null && !simpleType.getCodelistReferences().isEmpty()) {
-                // Assuming only the first codelist reference is relevant
-                detail.hasCodelistReference = true;
-                detail.allValuesSelected = true;
-                detail.codelistReferenceId = simpleType
-                        .getCodelistReferences()
-                        .get(0)
-                        .getId();
-            }
-        }
-    }
-
-    /**
-     * Get all DomainGUIDs together with a list of its selected codelist values
-     * @param selectedOnly
-     * @return Map<String: DomainGUID, List < String>: empty list if has no code list or no selected values,
-     *         null if all codelist values are selected
-     */
-    public Map<String, CodelistReferenceDetail> getAllDomainGuids(boolean selectedOnly) {
-        Map<String, CodelistReferenceDetail> result = new HashMap<>();
-
-        this.getNodes().forEach(node -> {
-            getAllDomainGuidsRecursive(result, node, selectedOnly);
-        });
-
-        return result;
     }
 }

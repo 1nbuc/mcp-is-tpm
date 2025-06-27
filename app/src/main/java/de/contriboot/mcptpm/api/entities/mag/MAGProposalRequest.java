@@ -1,8 +1,11 @@
 package de.contriboot.mcptpm.api.entities.mag;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -12,7 +15,7 @@ import java.util.List;
 @Setter
 public class MAGProposalRequest {
     @JsonProperty("MagProposalRequestSchemaVersion")
-    public String magProposalRequestSchemaVersion;
+    private String magProposalRequestSchemaVersion;
     @JsonProperty("Identification")
     public Identification identification;
     @JsonProperty("SourceBusinessContext")
@@ -118,11 +121,19 @@ public class MAGProposalRequest {
 
     @Getter
     @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class DomainGuid {
         @JsonProperty("DomainGuid")
         public String domainGuid;
         @JsonProperty("CodeValueGuid")
-        public String codeValueGuid;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private String codeValueGuid;
+
+        public DomainGuid(String domainGuid) {
+            this.domainGuid = domainGuid;
+            this.codeValueGuid = null;
+        }
     }
 
     @Getter

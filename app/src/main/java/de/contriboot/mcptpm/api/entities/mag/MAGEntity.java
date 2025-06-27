@@ -1,8 +1,10 @@
 package de.contriboot.mcptpm.api.entities.mag;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.figaf.integration.common.factory.HttpClientsFactory;
 import de.contriboot.mcptpm.api.clients.TypeSystemClient;
+import de.contriboot.mcptpm.api.entities.mag.proposal.response.MAGProposalResponse;
 import de.contriboot.mcptpm.api.entities.mig.MIGEntity;
 import lombok.Getter;
 import lombok.Setter;
@@ -350,6 +352,8 @@ public class MAGEntity {
     @Setter
     @Getter
     public static class TargetNodeStatus {
+        // TODO: placeholder bc. of deserialization error
+        private Object name;
     }
 
     @Setter
@@ -363,9 +367,7 @@ public class MAGEntity {
 
     public MAGProposalRequest getMAGProposalRequest(
             MIGEntity targetMigEntity,
-            MIGEntity sourceMigEntity,
-            List<MAGProposalRequest.DomainGuid> targetDomainGuids,
-            List<MAGProposalRequest.DomainGuid> sourceDomainGuids
+            MIGEntity sourceMigEntity
     ) {
         MAGProposalRequest request = new MAGProposalRequest();
         MAGProposalRequest.Identification identification = new MAGProposalRequest.Identification();
@@ -380,17 +382,11 @@ public class MAGEntity {
 
         request.setMagProposalRequestSchemaVersion("1.0");
 
-        // Get domain GUIDs
-        // Get codelist
-        // Get codelist selection
-        // get codelist selection vertex GUIDs
-        // add domainGuids for every selectin vertex GUID + one without CodeValueGuid
-
         request.setSourceBusinessContext(getSourceBusinessContext());
         request.setTargetBusinessContext(getTargetBusinessContext());
 
-        request.setTargetDomainGuids(targetDomainGuids);
-        request.setSourceDomainGuids(sourceDomainGuids);
+        request.setTargetDomainGuids(targetMigEntity.getDomainGuidsWithCodeValues());
+        request.setSourceDomainGuids(sourceMigEntity.getDomainGuidsWithCodeValues());
 
         request.setSourceMig(getSourceMig());
         request.setTargetMig(getTargetMig());
@@ -405,5 +401,8 @@ public class MAGEntity {
         return request;
     }
 
+    public void applyMAGProposal(MAGProposalResponse magProposalResponse) {
 
+
+    }
 }

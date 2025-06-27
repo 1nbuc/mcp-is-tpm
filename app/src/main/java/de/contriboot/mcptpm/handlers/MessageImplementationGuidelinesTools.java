@@ -78,21 +78,6 @@ public class MessageImplementationGuidelinesTools {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    @Tool(name = "get-mig-sample-data", description = "Get sample data if available for MIG")
-    public String getSampleData(String migVersionId) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Tool(name = "get-simple-type", description = "Get simple types by GUID List")
-    public List<String> getSimpleType(String migVersionId, List<String> typeId) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Tool(name = "get-complex-type", description = "Get complex type by GUID List")
-    public List<String> getComplexType(String migVersionId, List<String> typeId) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     //TODO: be aware of local codelists
     @Tool(name = "get-qualifiers-codelist", description = "Get codelist of a qualifier")
     public List<String> getQualifierCodelist(String typesystem, String version, String qualifier) {

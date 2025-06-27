@@ -8,6 +8,7 @@ import de.contriboot.mcptpm.api.entities.mapper.TypeSystemMessagesMapper;
 import de.contriboot.mcptpm.utils.JsonUtils;
 import de.contriboot.mcptpm.utils.ToolUtils;
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 
 import com.figaf.integration.common.factory.HttpClientsFactory;
@@ -24,16 +25,35 @@ public class TypeSystemTools {
         this.client = new TypeSystemClient(new HttpClientsFactory());
     }
 
-    @Tool(name = "get-type-systems", description = "Get available type systems")
+    @Tool(name = "get-type-systems", description = "Get available type systems. " +
+            "Every System also has a custom type system which is not listed here. The ID of this system is Customer_TS. " +
+            "You can query messages for this system as for every other")
     public List<AllTypeSystemsResponse> getTypeSystems() {
         return client.getTypeSystems(Config.getRequestContextFromEnv());
     }
 
-    @Tool(name = "get-type-system-messages", description = "Get messages of type system")
+    @Tool(name = "get-type-system-messages", description = "Get messages of a type system. To query custom messages use ID Customer_TS")
     public JsonNode getTypeSystemMessage(String typeSystemId) {
         return TypeSystemMessagesMapper.fromJsonStringMinified(
                 client.getTypeSystemMessagesRaw(Config.getRequestContextFromEnv(), typeSystemId)
         );
+    }
+
+    @Tool(name = "create-custom-message", description = "Create a custom message in typesystem Customer_TS based on XSD")
+    JsonNode createCustomMessage(
+            @ToolParam(description = "identifier within the type system") String messageName,
+            @ToolParam(description = "Name of the root element for the message") String rootElementName,
+            @ToolParam(description = "Namespace of the message, for no NS pass empty string") String namespace,
+            @ToolParam(description = "XSD Definition of the message") String xsd
+    ) {
+        return ToolUtils.parseJson(
+                client.createCustomMessage(
+                        Config.getRequestContextFromEnv(),
+                        messageName,
+                        xsd,
+                        rootElementName,
+                        namespace
+                ));
     }
 
     @Tool(name = "get-all-business-processes")
