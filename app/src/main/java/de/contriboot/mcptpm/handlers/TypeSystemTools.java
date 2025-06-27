@@ -107,4 +107,9 @@ public class TypeSystemTools {
     public JsonNode getQualifierCodelist(String typesystem, String version, String qualifier) {
         return client.getCodelistValues(Config.getRequestContextFromEnv(), typesystem, version, qualifier);
     }
+
+    @Tool(name = "get-type-system-identifier-schemes", description = "Get the possible scheme for identifiers in a type system")
+    public JsonNode getTypeSystemIdentifierSchemes(String typeSystemId) {
+        return ToolUtils.parseJson(client.getIdentifierSchemes(Config.getRequestContextFromEnv(), typeSystemId));
+    }
 }

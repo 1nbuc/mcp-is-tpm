@@ -37,15 +37,7 @@ public class TypeSystemClient extends TpmBaseClient {
     public static final String CUSTOM_TYPE_SYSTEM_MESSAGES_RESOURCE = "/api/1.0/customtypesystems/Customer_TS?artifacttype=TypeSystem";
     public static final String CUSTOM_TYPE_PROPAGATE_XSD_RESOURCE = "/api/1.0/custommessages?syntaxType=XML";
     public static final String CUSTOM_TYPE_MESSAGES_RESOURCE = "/api/1.0/custommessages";
-    public static final String CREATE_TYPE_PAYLOAD_FORMAT = "------geckoformboundarya4499a09c191b0131d749e7af605418b\n" +
-            "Content-Disposition: form-data; name=\"file\"; filename=\"payload.xsd\"\n" +
-            "Content-Type: application/octet-stream\n" +
-            "\n%s" +
-            "------geckoformboundarya4499a09c191b0131d749e7af605418b\n" +
-            "Content-Disposition: form-data; name=\"fileuploader-data\"\n" +
-            "\n" +
-            "{\"identifier\":\"%s\",\"name\":\"%s\",\"version\":\"1.0\",\"definition\":\"\",\"takenFromXSD\":false,\"tsVertexGuid\":\"%s\",\"typeSystemId\":\"Customer_TS\",\"typeSystemAcronym\":\"Custom Messages\",\"syntaxType\":\"XML\",\"selectedMessageName\":\"%s\",\"selectedMessageNamespace\":\"%s\"}\n" +
-            "------geckoformboundarya4499a09c191b0131d749e7af605418b--\n";
+    public static final String IDENTIFIER_SCHEME_FORMAT = "/itspaces/tpm/bootstrap?type=identifierScheme&typeSystem=%s";
 
     public TypeSystemClient(HttpClientsFactory httpClientsFactory) {
         super(httpClientsFactory);
@@ -107,16 +99,6 @@ public class TypeSystemClient extends TpmBaseClient {
                 .tsVertexGuid(tSVertexGuid)
                 .selectedMessageName(selectedMessageElem)
                 .selecteMessageNamespace(selectedMessageNamespace == null ? "" : selectedMessageNamespace.trim()).build();
-
-        String typePayload = format(
-                CREATE_TYPE_PAYLOAD_FORMAT,
-                xsdPayload.getBytes(StandardCharsets.UTF_8),
-                messageName,
-                messageName,
-                tSVertexGuid,
-                selectedMessageElem,
-                selectedMessageNamespace == null ? "" : selectedMessageNamespace
-        );
 
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         ObjectMapper objectMapper = new ObjectMapper();
@@ -220,6 +202,10 @@ public class TypeSystemClient extends TpmBaseClient {
         }
 
         return resultGuids;
+    }
+
+    public String getIdentifierSchemes(RequestContext requestContext, String typeSystem) {
+        return executeGet(requestContext, format(IDENTIFIER_SCHEME_FORMAT, typeSystem), (response) -> response);
     }
 
     @Getter
