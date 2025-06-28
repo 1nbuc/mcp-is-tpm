@@ -72,7 +72,7 @@ public class PartnerTools {
             @ToolParam(description = "Alias for the system", required = false) String alias,
             @ToolParam(description = "Description for the system", required = false) String description,
             @ToolParam(description = "System type", required = false) String systemType,
-            @ToolParam(description = "Purpose of the system. Can be Dev, Test, Prod", required = true) String purpose,
+            @ToolParam(description = "Purpose of the system. Can be Dev, Test, Prod") String purpose,
             @ToolParam(description = "Link associated with the system", required = false) String link,
             @ToolParam(description = "JSON list of type systems. Each element is a JSON string representing a TypeSystem object (e.g., {\"Id\":\"sysId\", \"Name\":\"sysName\", \"Versions\":[{\"Id\":\"vId\", \"Name\":\"vName\"}]})", required = false) List<String> typeSystemsJsonList,
             @ToolParam(description = "List of communication channel template IDs", required = false) List<String> communicationChannelTemplates) {
@@ -111,17 +111,7 @@ public class PartnerTools {
     // Removed the overloaded createSystem(CreateSystemRequest request) method
 
     @Tool(name = "create-communication", description = "Create communication channel for a system of a trading partner")
-    public String createCommunication(
-            @ToolParam(description = "ID of the trading partner") String partnerId,
-            @ToolParam(description = "ID of the system within the trading partner") String systemId,
-            @ToolParam(description = "Direction of the communication (e.g., Inbound, Outbound)", required = false) String direction,
-            @ToolParam(description = "Adapter type (e.g., AS2, IDOC)", required = false) String adapterType,
-            @ToolParam(description = "AS2 Partner ID, if applicable", required = false) String as2PartnerId,
-            @ToolParam(description = "Security configuration mode", required = false) String securityConfigurationMode,
-            @ToolParam(description = "Name of the communication channel") String name,
-            @ToolParam(description = "Alias for the communication channel", required = false) String alias,
-            @ToolParam(description = "Description for the communication channel", required = false) String description,
-            @ToolParam(description = "JSON string representing configuration properties (Map<String, Attribute> e.g. {\"prop1\":{\"key\":\"prop1\",\"value\":\"val1\",\"isPersisted\":true}})", required = false) String configurationPropertiesJson) {
+    public String createCommunication(@ToolParam(description = "ID of the trading partner") String partnerId, @ToolParam(description = "ID of the system within the trading partner") String systemId, @ToolParam(description = "Direction of the communication (e.g., Inbound, Outbound)", required = false) String direction, @ToolParam(description = "Adapter type (e.g., AS2, IDOC)", required = false) String adapterType, @ToolParam(description = "AS2 Partner ID, if applicable", required = false) String as2PartnerId, @ToolParam(description = "Security configuration mode", required = false) String securityConfigurationMode, @ToolParam(description = "Name of the communication channel") String name, @ToolParam(description = "Alias for the communication channel", required = false) String alias, @ToolParam(description = "Description for the communication channel", required = false) String description, @ToolParam(description = "JSON string representing configuration properties (Map<String, Attribute> e.g. {\"prop1\":{\"key\":\"prop1\",\"value\":\"val1\",\"isPersisted\":true}})", required = false) String configurationPropertiesJson) {
         CreateCommunicationRequest request = new CreateCommunicationRequest();
         if (direction != null) request.setDirection(direction);
         if (adapterType != null) request.setAdapterType(adapterType);
@@ -150,38 +140,29 @@ public class PartnerTools {
         return "success";
     }
 
-    @Tool(name = "create-identifier", description = "Create a partner Identifier")
+    @Tool(name = "create-identifier", description = "Create a partner Identifier. " + "For the scheme values please check tool get-type-system-identifier-schemes first. Only single identifiers are supported")
     public String createIdentifier(
             @ToolParam(description = "ID of the trading partner") String partnerId,
-            @ToolParam(description = "Is this a group identifier?") boolean isGroupIdentifier,
             @ToolParam(description = "Type System ID for the identifier") String typeSystemId,
-            @ToolParam(description = "Scheme code for the identifier", required = false) String schemeCode,
-            @ToolParam(description = "Scheme name for the identifier", required = false) String schemeName,
-            @ToolParam(description = "The identifier ID itself") String identifierId,
-            @ToolParam(description = "Alias for the identifier", required = false) String alias,
-            @ToolParam(description = "Agency associated with the identifier", required = false) String agency) {
+            @ToolParam(description = "Scheme code for the identifier", required = true) String schemeCode,
+            @ToolParam(description = "Scheme name for the identifier, check get-type-system-identifier-schemes", required = true) String schemeName,
+            @ToolParam(description = "The identifier Name") String identifierId, @ToolParam(description = "Alias for the identifier") String alias
+    ) {
         CreateIdentifierRequest request = new CreateIdentifierRequest();
-        request.setGroupIdentifier(isGroupIdentifier);
+        request.setGroupIdentifier(false);
         request.setTypeSystemId(typeSystemId);
-        if (schemeCode != null) request.setSchemeCode(schemeCode);
-        if (schemeName != null) request.setSchemeName(schemeName);
+        request.setSchemeCode(schemeCode);
+        request.setSchemeName(schemeName);
         request.setIdentifierId(identifierId);
-        if (alias != null) request.setAlias(alias);
-        if (agency != null) request.setAgency(agency);
+        request.setAlias(alias);
+        request.setAgency(schemeName);
 
         client.createIdentifier(partnerId, request, Config.getRequestContextFromEnv());
         return "success";
     }
 
-    @Tool(name = "create-signature-verify-config", description = "Create Signature Verification configuration for a partner")
-    public String createSignatureVerifyConfig(
-            @ToolParam(description = "ID of the trading partner") String partnerId,
-            @ToolParam(description = "Artifact type (default: TRADING_PARTNER)", required = false) String artifactType,
-            @ToolParam(description = "Verification option (default: NotRequired)", required = false) String verificationOption,
-            @ToolParam(description = "AS2 Partner ID, if applicable", required = false) String as2PartnerId,
-            @ToolParam(description = "Alias for the configuration", required = false) String alias,
-            @ToolParam(description = "Verify MIC (Message Integrity Check)?") boolean verifyMIC,
-            @ToolParam(description = "Public key alias for verification", required = false) String publicKeyAliasForVerification) {
+    @Tool(name = "create-signature-verify-config", description = "Create Signature Verification configuration for a partner. " + "Use activate-signature-verify-config afterwards to activate the verify config")
+    public String createSignatureVerifyConfig(@ToolParam(description = "ID of the trading partner") String partnerId, @ToolParam(description = "Artifact type (default: TRADING_PARTNER)", required = false) String artifactType, @ToolParam(description = "Verification option (default: NotRequired)", required = false) String verificationOption, @ToolParam(description = "AS2 Partner ID, if applicable", required = false) String as2PartnerId, @ToolParam(description = "Alias for the configuration", required = false) String alias, @ToolParam(description = "Verify MIC (Message Integrity Check)?") boolean verifyMIC, @ToolParam(description = "Public key alias for verification", required = false) String publicKeyAliasForVerification) {
         CreateSignatureVerificationConfigurationsRequest request = new CreateSignatureVerificationConfigurationsRequest();
         if (artifactType != null) request.setArtifactType(artifactType);
         else request.setArtifactType("TRADING_PARTNER"); // set default if null
@@ -203,15 +184,7 @@ public class PartnerTools {
     }
 
     @Tool(name = "create-trading-partner", description = "Create a new trading partner")
-    public TradingPartnerVerboseDto createTradingPartnerTool(
-            @ToolParam(description = "Name of the trading partner") String name,
-            @ToolParam(description = "Short name of the trading partner") String shortName,
-            @ToolParam(description = "Web URL of the trading partner", required = false) String webURL,
-            @ToolParam(description = "Logo ID for the trading partner", required = false) String logoId,
-            @ToolParam(description = "Email address of the trading partner", required = false) String emailAddress,
-            @ToolParam(description = "Phone number of the trading partner", required = false) String phoneNumber,
-            @ToolParam(description = "JSON string representing the Profile object. See CreateTradingPartnerRequest.Profile for structure.", required = false) String profileJson,
-            @ToolParam(description = "Artifact type (default: TRADING_PARTNER)", required = false) String artifactType) {
+    public TradingPartnerVerboseDto createTradingPartnerTool(@ToolParam(description = "Name of the trading partner") String name, @ToolParam(description = "Short name of the trading partner") String shortName, @ToolParam(description = "Web URL of the trading partner", required = false) String webURL, @ToolParam(description = "Logo ID for the trading partner", required = false) String logoId, @ToolParam(description = "Email address of the trading partner", required = false) String emailAddress, @ToolParam(description = "Phone number of the trading partner", required = false) String phoneNumber, @ToolParam(description = "JSON string representing the Profile object. See CreateTradingPartnerRequest.Profile for structure.", required = false) String profileJson, @ToolParam(description = "Artifact type (default: TRADING_PARTNER)", required = false) String artifactType) {
         CreateTradingPartnerRequest request = new CreateTradingPartnerRequest();
         request.setName(name);
         if (shortName != null) request.setShortName(shortName);
