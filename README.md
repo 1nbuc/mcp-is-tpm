@@ -25,19 +25,21 @@ If you have a standalone S-User, delete the CPI_UNIVERSAL_MAIL variable
 ```json
 {
   "mcpServers": {
-    "mcp-is-tpm": {
-      "command": "java",
+    "mcp-is": {
+      "command": "node",
       "args": [
-        "<project path>/app/build/libs/app-0.0.1-SNAPSHOT.jar"
+        "<project path>/dist/index.js"
       ],
       "autoApprove": []
     },
     "mcp-is-tpm": {
-      "command": "node",
+      "command": "java",
       "args": [
-        "-Dlogging.pattern.console=", "-Dspring.main.web-application-type=none",
+        "-Dlogging.pattern.console=", 
+        "-Dspring.main.web-application-type=none",
         "-Dspring.ai.mcp.server.stdio=true",
-        "-jar /Users/1nbuc/devshit/figaf/mcp-is-tpm/app/build/libs/app-0.0.1-SNAPSHOT.jar"
+        "-jar",
+        "/Users/1nbuc/devshit/figaf/mcp-is-tpm/app/build/libs/app-0.0.1-SNAPSHOT.jar"
       ],
       "autoApprove": [],
       "env": {
