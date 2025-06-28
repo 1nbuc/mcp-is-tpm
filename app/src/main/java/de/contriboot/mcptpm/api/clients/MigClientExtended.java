@@ -11,6 +11,7 @@ import de.contriboot.mcptpm.api.entities.mig.MIGProposalRequest;
 import de.contriboot.mcptpm.utils.JsonUtils;
 import org.springframework.http.*;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.figaf.integration.tpm.utils.TpmUtils.PATH_FOR_TOKEN;
@@ -197,7 +198,12 @@ public class MigClientExtended extends MessageImplementationGuidelinesClient {
                     HttpHeaders httpHeaders = createHttpHeadersWithCSRFToken(token);
                     httpHeaders.setContentType(MediaType.APPLICATION_JSON);
                     httpHeaders.set("Content-Encoding", "application/x-zip");
-                    HttpEntity<String> requestEntity = new HttpEntity<>(JsonUtils.createZippedBase64(entity, "mig.json"), httpHeaders);
+                    HttpEntity<String> requestEntity = null;
+                    try {
+                        requestEntity = new HttpEntity<>(JsonUtils.createZippedBase64(entity, "mig.json"), httpHeaders);
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Error zipping payload", e);
+                    }
                     ResponseEntity<String> responseEntity = restTemplateWrapper.getRestTemplate().exchange(url,
                             HttpMethod.PUT, requestEntity, String.class);
                     toggleLockMig(requestContext, migId, false);

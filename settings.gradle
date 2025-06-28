@@ -12,5 +12,3 @@ plugins {
 
 rootProject.name = 'mcp-is-tpm'
 include('app')
-
-includeBuild '../tpm-api'
