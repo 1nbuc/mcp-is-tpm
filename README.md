@@ -28,7 +28,7 @@ If you have a standalone S-User, delete the CPI_UNIVERSAL_MAIL variable
     "mcp-is": {
       "command": "node",
       "args": [
-        "<project path>/dist/index.js"
+        "<project path of mcp-integration-suite>/dist/index.js"
       ],
       "autoApprove": []
     },
