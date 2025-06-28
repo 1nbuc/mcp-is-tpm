@@ -40,15 +40,21 @@ public class Config {
     }
 
     public static String getEnvVar(String key) {
-        Dotenv dotenv = Dotenv.load();
+        Dotenv dotenv = null;
+        try {
+            dotenv = Dotenv.load();
+        } catch (Exception e) {
+
+        }
+
         String result = System.getenv(key);
 
-        if (result == null || result.isEmpty()) {
-            result = dotenv.get(key);
+        if ((result == null || result.isEmpty()) && dotenv == null) {
+            return null;
         }
 
         if (result == null || result.isEmpty()) {
-            return null;
+            result = dotenv.get(key);
         }
 
         return result;
