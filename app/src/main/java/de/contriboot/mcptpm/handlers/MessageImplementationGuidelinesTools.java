@@ -152,6 +152,10 @@ public class MessageImplementationGuidelinesTools {
     @Tool(name = "apply-mig-proposal", description = "Select fields based on MIG proposal. E.g. select all fields which" +
             "have a score over 50%")
     public String applyMigProposal(String migVersionId, @ToolParam(description = "Minimum Confidence value for proposal in %. 0-100") int confidenceValue) {
+        if (confidenceValue < 0 || confidenceValue > 100) {
+            throw new IllegalArgumentException("Confidence value must be between 0 and 100");
+        }
+
         MIGEntity entity = client.getMigVersionRawObject(Config.getRequestContextFromEnv(), migVersionId);
         MIGProposalResponse proposalResponse = MIGProposalResponseMapper.fromJsonString(
                 client.getMIGProposal(Config.getRequestContextFromEnv(), migVersionId)
