@@ -800,7 +800,7 @@ public class MIGEntity {
         @JsonProperty("Properties")
         private Map<String, PropertyDetail> properties;
         @JsonProperty("IDProperties")
-        private Map<String, String> idProperties;
+        private Map<String, Object> idProperties;
 
         @JsonProperty("QualifierMarkers")
         private List<QualifierMarker> qualifierMarkers;
