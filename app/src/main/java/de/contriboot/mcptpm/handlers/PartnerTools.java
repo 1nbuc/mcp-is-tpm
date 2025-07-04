@@ -164,6 +164,11 @@ public class PartnerTools {
         return "success";
     }
 
+    @Tool(name = "get-identifiers", description = "Get identifiers of a partner")
+    public JsonNode getIdentifiers(@ToolParam(description = "ID of the trading partner") String partnerId) {
+        return ToolUtils.parseJson(client.getIdentifiers(Config.getRequestContextFromEnv(), partnerId));
+    }
+
     @Tool(name = "create-signature-verify-config", description = "Create Signature Verification configuration for a partner. "
             + "Use activate-signature-verify-config afterwards to activate the verify config " +
             "This is used most likely for AS2 systems")

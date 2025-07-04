@@ -49,4 +49,8 @@ public class TradingPartnerClientExtended extends TradingPartnerClient {
                     return responseEntity.getBody();
                 });
     }
+
+    public String getIdentifiers(RequestContext requestContext, String partnerId) {
+        return executeGet(requestContext, format(IDENTIFIERS_RESOURCE, partnerId), (response) -> response);
+    }
 }
